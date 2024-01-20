@@ -12,7 +12,7 @@ public class TsHumanAnimator : MonoBehaviour
 
     [SerializeField]
     private TsAvatarSettings m_avatarSettings;
-    public bool IPose = false;
+    public bool IPose = true;
 
     private TsHumanBoneIndex m_rootBone = TsHumanBoneIndex.Hips;
     private Dictionary<TsHumanBoneIndex, Transform> m_bonesTransforms = new Dictionary<TsHumanBoneIndex, Transform>();
@@ -83,12 +83,12 @@ public class TsHumanAnimator : MonoBehaviour
             }
         }
 
-        ////*
-        //foreach (KeyValuePair<TsHumanBoneIndex, Transform> kvp in m_bonesTransforms)
-        //{
-        //    //Debug.Log("index: " + (int)kvp.Key + " pos: " + kvp.Value.position + " pos: " + kvp.Value.rotation);
-        //    Debug.Log("index: " + kvp.Key);
-        //}
+        //*
+        foreach (KeyValuePair<TsHumanBoneIndex, Transform> kvp in m_bonesTransforms)
+        {
+            //Debug.Log("index: " + (int)kvp.Key + " pos: " + kvp.Value.position + " pos: " + kvp.Value.rotation);
+            Debug.Log("index: " + kvp.Key);
+        }
     }
 
     // Update is called once per frame
@@ -126,9 +126,10 @@ public class TsHumanAnimator : MonoBehaviour
            //proly because hips is not being found in recursive search. we had placd it for ethan ourselves.
                 TryDoWithBone(boneIndex, (boneTransform) =>
                 {
+
                     boneTransform.rotation = targetRotation * poseRotation;
                     //*
-                   // boneTransform.position = Conversion.TsVector3ToUnityVector3(skeleton.GetBoneTransform(boneIndex).position);
+                    // boneTransform.position = Conversion.TsVector3ToUnityVector3(skeleton.GetBoneTransform(boneIndex).position);
                 });
 
         }
@@ -142,8 +143,8 @@ public class TsHumanAnimator : MonoBehaviour
         #endregion
         #region Position+Rotation
         ////Pos+rot
-        //foreach (var boneIndex in TsHumanBones.SuitBones)
-        //{
+        //
+
         //    var poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
         //    var targetPosition = Conversion.TsVector3ToUnityVector3(skeleton.GetBoneTransform(boneIndex).position);
         //    var targetRotation = Conversion.TsRotationToUnityRotation(skeleton.GetBoneTransform(boneIndex).rotation).eulerAngles;
@@ -193,6 +194,31 @@ public class TsHumanAnimator : MonoBehaviour
     }
     public void Calibrate()
     {
+
+        #region turn in "identity" direction - not working, will turn back to position
+        /*ISkeleton skeleton = m_motionProvider?.GetSkeleton();
+        foreach (var boneIndex in TsHumanBones.SuitBones)
+        {
+            var poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
+            var targetRotation = Quaternion.Euler(1, 1, 1);
+            var targetPosition = Conversion.TsVector3ToUnityVector3(skeleton.GetBoneTransform(boneIndex).position);
+            TryDoWithBone(boneIndex, (boneTransform) =>
+            {
+                boneTransform.rotation = targetRotation * poseRotation;
+                //boneTransform.transform.position = new Vector3(targetPosition.x, 1, targetPosition.z);
+            });
+
+        }
+        //Set hips(rootbone) as main position of model
+        TryDoWithBone(m_rootBone, (boneTransform) =>
+        {
+            var hipsPos = skeleton.GetBoneTransform(TsHumanBoneIndex.Hips).position;
+            //boneTransform.transform.position = Conversion.TsVector3ToUnityVector3(hipsPos);
+            boneTransform.position = new Vector3(hipsPos.x, 1, hipsPos.z);
+        });
+*/
+        #endregion
+
         m_motionProvider?.Calibrate();
     }
     //*
