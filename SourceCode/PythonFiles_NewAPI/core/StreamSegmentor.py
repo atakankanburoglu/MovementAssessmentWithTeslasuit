@@ -11,8 +11,7 @@ class StreamSegmentor:
         self.denoiseProxy = DenoiseProxy()
         self.state = "UNKNOWN"
         self.negativeCount = 0
-        self.last_recognized_exercise = ClassificationExercise.PUSHUP
-
+        self.last_recognized_exercise = ClassificationExercise.PLANKHOLD
     '''
         Returns the state of a segment
     '''

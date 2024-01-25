@@ -1,8 +1,15 @@
 {
   "ExpandedNodes": [
     "",
-    "\\server"
+    "\\core",
+    "\\core\\ml-models",
+    "\\data",
+    "\\server",
+    "\\training",
+    "\\training\\data",
+    "\\training\\old-data",
+    "\\training\\positive-training-data"
   ],
-  "SelectedNode": "\\ClassificationResult.py",
+  "SelectedNode": "\\training\\data\\DataManager.py",
   "PreviewInSolutionExplorer": false
 }

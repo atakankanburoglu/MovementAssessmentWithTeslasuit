@@ -9,40 +9,45 @@ from data.DataAccess import DataAccess
 
 class DataManager:
     def __init__(self):
-        self.unlabeled_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/1-unlabelled-data/"
-        self.unlabeled_files = []
-        for filename in os.listdir(self.unlabeled_data_dir):
-            self.unlabeled_files.append(filename)
+        #self.unlabeled_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/1-unlabelled-data/"
+        #self.unlabeled_files = []
+        #for filename in os.listdir(self.unlabeled_data_dir):
+        #    self.unlabeled_files.append(filename)
 
-        self.negativ_lebaled_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/2-negativ-labeled-data/"
-        self.negativ_labeled_files = []
-        for filename in os.listdir(self.negativ_lebaled_data_dir):
-            self.negativ_labeled_files.append(filename)
+        #self.negativ_lebaled_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/2-negativ-labeled-data/"
+        #self.negativ_labeled_files = []
+        #for filename in os.listdir(self.negativ_lebaled_data_dir):
+        #    self.negativ_labeled_files.append(filename)
 
-        self.labeled_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/3-labeled-data/"
-        self.labeled_files = []
-        for filename in os.listdir(self.labeled_data_dir):
-            self.labeled_files.append(filename)
+        #self.labeled_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/3-labeled-data/"
+        #self.labeled_files = []
+        #for filename in os.listdir(self.labeled_data_dir):
+        #    self.labeled_files.append(filename)
 
-        self.segmented_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/4-segmented-data/"
-        self.segmented_files = []
-        for filename in os.listdir(self.segmented_data_dir):
-            self.segmented_files.append(filename)
+        #self.segmented_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/4-segmented-data/"
+        #self.segmented_files = []
+        #for filename in os.listdir(self.segmented_data_dir):
+        #    self.segmented_files.append(filename)
 
-        self.error_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/5-error-data/"
-        self.error_files = []
-        for filename in os.listdir(self.error_data_dir):
-            self.error_files.append(filename)
+        #self.error_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/5-error-data/"
+        #self.error_files = []
+        #for filename in os.listdir(self.error_data_dir):
+        #    self.error_files.append(filename)
 
-        self.predicted_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/4-predicted-data/"
-        self.predicted_files = []
-        for filename in os.listdir(self.predicted_data_dir):
-            self.predicted_files.append(filename)
+        #self.predicted_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/4-predicted-data/"
+        #self.predicted_files = []
+        #for filename in os.listdir(self.predicted_data_dir):
+        #    self.predicted_files.append(filename)
 
-        simulation_data_dir = str(pathlib.Path(__file__).parent) + "/../../simulation/simulation-data/"
-        self.simulation_files = []
-        for filename in os.listdir(simulation_data_dir):
-            self.simulation_files.append(simulation_data_dir + filename)
+        #simulation_data_dir = str(pathlib.Path(__file__).parent) + "/../../simulation/simulation-data/"
+        #self.simulation_files = []
+        #for filename in os.listdir(simulation_data_dir):
+        #    self.simulation_files.append(simulation_data_dir + filename)
+
+        positive_training_data_dir = str(pathlib.Path(__file__).parent) + "/../../training/positive-training-data/"
+        self.positive_training_data_files = []
+        for filename in os.listdir(positive_training_data_dir):
+            self.positive_training_data_files.append(positive_training_data_dir + filename)
 
     def get_simulation_data(self):
         dataframes = []
@@ -69,8 +74,8 @@ class DataManager:
         groups = []
         labels_by_files = []
 
-        for filename in self.labeled_files:
-            partial_training_data = pd.read_csv(self.labeled_data_dir + filename, sep=";", header=0, skiprows=1)
+        for filename in self.positive_training_data_files:
+            partial_training_data = pd.read_csv(self.positive_training_data_dir + filename, sep=";", header=0, skiprows=1)
             dataframes.append(partial_training_data)
 
             subjectId = int(filename.split("_")[0])

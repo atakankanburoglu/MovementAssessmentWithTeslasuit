@@ -6,10 +6,10 @@ public class ReplayObject
 {
     public string subjectName;
     public List<ReplayInfo> replayInfo = new List<ReplayInfo>();
-    public TrainingTypes trainingType = TrainingTypes.Plank_Hold;
+    public TrainingType trainingType = TrainingType.Plank_Hold;
 
     public ReplayObject() { }
-    public ReplayObject(string name, List<ReplayInfo> info, TrainingTypes training)
+    public ReplayObject(string name, List<ReplayInfo> info, TrainingType training)
     {
         subjectName = name;
         replayInfo = info;

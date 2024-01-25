@@ -19,6 +19,10 @@ public class TsHumanAnimator : MonoBehaviour
     //*
     public Dictionary<TsHumanBoneIndex, Transform> BoneTransforms { get { return m_bonesTransforms; } }
     //*
+    private Dictionary<TsHumanBoneIndex, TsImuSensorData> m_imuData = new Dictionary<TsHumanBoneIndex, TsImuSensorData>();
+    //*
+    public Dictionary<TsHumanBoneIndex, TsImuSensorData> ImuData { get { return m_imuData; } }
+    //*
     public bool Replay;
     //*
     float IPoseTimer;
@@ -57,6 +61,9 @@ public class TsHumanAnimator : MonoBehaviour
 
     private void SetupAvatarBones()
     {
+        //*
+        var imuData = m_motionProvider.GetImuData(Time.time);
+
         foreach (var reqBoneIndex in TsHumanBones.SuitBones)
         {            
             var transformName = m_avatarSettings.GetTransformName(reqBoneIndex);
@@ -81,6 +88,11 @@ public class TsHumanAnimator : MonoBehaviour
             {
                 m_bonesTransforms.Add(reqBoneIndex, boneTransform);
             }
+            //*
+            if(imuData != null)
+            {
+                m_imuData.Add(reqBoneIndex, imuData.GetSensorData(reqBoneIndex));
+            }
         }
 
         //*
@@ -88,6 +100,7 @@ public class TsHumanAnimator : MonoBehaviour
         {
             //Debug.Log("index: " + (int)kvp.Key + " pos: " + kvp.Value.position + " pos: " + kvp.Value.rotation);
             Debug.Log("index: " + kvp.Key);
+
         }
     }
 
@@ -95,19 +108,20 @@ public class TsHumanAnimator : MonoBehaviour
     private void Update()
     {
         var skeleton = m_motionProvider.GetSkeleton(Time.time);
-
+        //*
+        var imuData = m_motionProvider.GetImuData(Time.time);
         //*
 
         ReplayObject rO = new ReplayObject { };
 
         //*
         //if replay is true, character will be replayed by TsReplaySaver script
-        if(!Replay) Update(skeleton);
+        if(!Replay) Update(skeleton, imuData);
         
     }
 
    
-    private void Update(ISkeleton skeleton)
+    private void Update(ISkeleton skeleton, IImuData imuData)
     {
         
 
@@ -121,6 +135,7 @@ public class TsHumanAnimator : MonoBehaviour
         {
             var poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
             var targetRotation = Conversion.TsRotationToUnityRotation(skeleton.GetBoneTransform(boneIndex).rotation);
+            var currentSensorData = imuData.GetSensorData(boneIndex);
 
            // if (boneIndex != TsHumanBoneIndex.Hips) //dont understand why this is here-> breaks the hips rotation of imported models.
            //proly because hips is not being found in recursive search. we had placd it for ethan ourselves.
@@ -194,7 +209,7 @@ public class TsHumanAnimator : MonoBehaviour
     }
     public void Calibrate()
     {
-
+        //*
         #region turn in "identity" direction - not working, will turn back to position
         /*ISkeleton skeleton = m_motionProvider?.GetSkeleton();
         foreach (var boneIndex in TsHumanBones.SuitBones)

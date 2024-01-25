@@ -131,7 +131,7 @@ public class CsvEditor
             replayInfos.Add(replayInfo);
 
         }
-        ReplayObject replayObject = new ReplayObject("deneme", replayInfos,TrainingTypes.Plank_Hold);
+        ReplayObject replayObject = new ReplayObject("deneme", replayInfos,TrainingType.Plank_Hold);
         string json = JsonConvert.SerializeObject(replayObject.replayInfo.ToArray(), Formatting.Indented);
 
         //write string to file

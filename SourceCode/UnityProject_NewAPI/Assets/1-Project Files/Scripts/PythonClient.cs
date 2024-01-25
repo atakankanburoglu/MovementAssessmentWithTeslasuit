@@ -19,16 +19,17 @@ public class PythonClient
     private Thread _receiverThread;
     private Queue replayInfoQueue = new Queue();
     private Boolean running = false;
+    private SampleType sampleType;
 
     //private MotionFeedback _motionFeedback;
     //private MocapJoints _mocapJoints;
-    //private DataGateway _dataGateway;
+    private DataGateway _dataGateway;
 
     public PythonClient()
     {
         //_mocapJoints = MocapJoints.GetInstance();
         //_motionFeedback = GameObject.Find("Teslasuit_Man").GetComponent<MotionFeedback>();
-        //_dataGateway = GameObject.Find("DataGateway").GetComponent<DataGateway>();
+        _dataGateway = GameObject.Find("DataGateway").GetComponent<DataGateway>();
         _senderThread = new Thread(RunSend);
         _senderThread.Start();
         _receiverThread = new Thread(RunReceive);
@@ -45,17 +46,17 @@ public class PythonClient
 
             while (running)
             {
-               // string jsonArr = File.ReadAllText(@"C:\StudentProjects\Burakhan\Tesla Suit\Assets\JsonAttempts\burak_Lunge.json");
-                //var player = JsonConvert.DeserializeObject<List<ReplayInfo>>(jsonArr);
                 if (replayInfoQueue.Count > 0)
-                //if (true)
                 {
 
-                    ReplayInfo dataToSend = (ReplayInfo)replayInfoQueue.Dequeue();
-                    string json = JsonConvert.SerializeObject(dataToSend, Formatting.Indented);
-                    //string csv = dataToSend.ToCSV(";", filtered: true);
-                    string csv = "Hi python!";
-                    publisher.SendFrame("SuitDataStream " + json);
+                    ImuDataObject dataToSend = (ImuDataObject)replayInfoQueue.Dequeue();
+                    string csv = dataToSend.ToCSV(";", filtered: true);
+                    publisher.SendFrame("ImuDataStream " + csv);
+                    UnityEngine.Debug.Log("message sent");
+                }
+                if(sampleType != null)
+                {
+                    publisher.SendFrame("TrainingFinished " + sampleType);
                     UnityEngine.Debug.Log("message sent");
                 }
                 Thread.Sleep(1);
@@ -76,18 +77,18 @@ public class PythonClient
             while (running)
             {
                 string payload = subscriber.ReceiveFrameString();
-                //String[] values = payload.Split(' ');
-                //string message = values[1];
-                //values = message.Split(',');
+                String[] values = payload.Split(' ');
+                string message = values[1];
+                values = message.Split(',');
 
                 //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
 
-                //Exercise recognizedExercise = (Exercise)Enum.Parse(typeof(Exercise), values[0], true);
-                //if (recognizedExercise != Exercise.Negative)
-                //{
-                //    _dataGateway.recognizedExercise = recognizedExercise;
-                //    Debug.Log($"Recognized: {recognizedExercise}");
-                //}
+                TrainingType recognizedExercise = (TrainingType)Enum.Parse(typeof(TrainingType), values[0], true);
+                if (recognizedExercise != null)
+                {
+                    _dataGateway.recognizedExercise = recognizedExercise;
+                    Debug.Log($"Recognized: {recognizedExercise}");
+                }
 
 
                 //int indexOffset = 2;
@@ -115,9 +116,14 @@ public class PythonClient
         NetMQConfig.Cleanup(); // this line is needed to prevent unity freeze after one use, not sure why yet
     }
 
-    public void pushSuitData(ReplayInfo data)
+    public void pushSuitData(ImuDataObject data)
     {
         replayInfoQueue.Enqueue(data);
+    }
+
+    public void finishSuitTrainingData(SampleType sampleType)
+    {
+        this.sampleType = sampleType;
     }
 
     public void Stop()

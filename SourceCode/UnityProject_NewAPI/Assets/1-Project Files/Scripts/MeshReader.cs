@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class MeshReader : MonoBehaviour
 {
-    Vector3[] _vertices;
+    Vector3[] 
+        _vertices;
    
     void Start()
     {

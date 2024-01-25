@@ -70,6 +70,12 @@ public class TsLiveMotionProvider : TsMotionProvider
         return m_mocap?.Skeleton;
     }
 
+    //*
+    public override IImuData GetImuData(float time = 0)
+    {
+        return m_mocap?.ImuData;
+    }
+
     public override void Calibrate()
     {
         m_mocap?.Calibrate();

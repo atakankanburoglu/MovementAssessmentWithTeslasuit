@@ -10,108 +10,12 @@ using Newtonsoft.Json;
 using System.Runtime.Serialization;
 using System;
 
-//[System.Serializable]
-//public struct MyQuaternion 
-//{
-//    public float x;
-//    public float y;
-//    public float z;
-//    public float w;
-//    public MyQuaternion(float X, float Y, float Z, float W)
-//    {
-//        x = X; y = Y; z = Z; w = W;
-//    }
-
-//    public static MyQuaternion ConverToMyQuat(Quaternion quat)
-//    {
-//        return new MyQuaternion(quat.x,quat.y,quat.z,quat.w);
-//    }
-//    public static Quaternion ConvertToQuat(MyQuaternion myQuat)
-//    {
-//        return new Quaternion(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-//    }
-//    public override string ToString()
-//    {
-//        return string.Format("{0}, {1}, {2}, {3}", x, y, z, w);
-//    }
-
-//}
-//public class ReplayObject
-//{
-//    public string subjectName;
-//    public List<ReplayInfo> replayInfo = new List<ReplayInfo>();
-
-//    public ReplayObject() { }
-//    public ReplayObject(string name, List<ReplayInfo> info)
-//    {
-//        subjectName = name;
-//        replayInfo = info;
-//    }
-//   // public List<float> timeStamp;   
-//}
-
-//public class ReplayInfo : ISkeleton
-//{
-//    public Dictionary<TsHumanBoneIndex,Vector3> replayPosition = new Dictionary<TsHumanBoneIndex, Vector3>();
-//    public Dictionary<TsHumanBoneIndex,Vector3> replayRotation = new Dictionary<TsHumanBoneIndex, Vector3>();
-//    //Test
-//    public Dictionary<TsHumanBoneIndex,MyQuaternion> replayRotationQuaternion = new Dictionary<TsHumanBoneIndex, MyQuaternion>();
-//    public TsTransform GetBoneTransform(TsHumanBoneIndex index)
-//    {
-//        //will be worked further
-//        TsTransform t = new TsTransform(new TsVec3f(), new TsQuat());
-//        TsVec3f tt = new TsVec3f(); tt.x = replayPosition[index].x;
-//        return t;
-//    }
-//    /// <summary>
-//    /// Needs a better interpolation technique
-//    /// </summary>
-//    /// <param name="r1"></param>
-//    /// <param name="r2"></param>
-//    /// <returns></returns>
-//    [System.Obsolete]
-//    public static ReplayInfo Interpolate(ReplayInfo r1, ReplayInfo r2)
-//    {
-//        if (r1 == null || r2 == null) return r1;
-
-//        ReplayInfo rReturn = new ReplayInfo();
-//        for(int i = 0; i < r1.replayPosition.Count;i++)
-//        {
-//            if (r1.replayPosition.ContainsKey((TsHumanBoneIndex)i))
-//            {
-//                rReturn.replayPosition.Add( (TsHumanBoneIndex)i,(r1.replayPosition[(TsHumanBoneIndex)i]+ r2.replayPosition[(TsHumanBoneIndex)i])/2);
-//                rReturn.replayRotation.Add( (TsHumanBoneIndex)i,(r1.replayRotation[(TsHumanBoneIndex)i]+ r2.replayRotation[(TsHumanBoneIndex)i])/2);
-//            }
-//        }
-//        return rReturn;
-
-//    }
-//    public bool GetBoneTransform(TsHumanBoneIndex boneIndex, out TsTransform boneTransform) { boneTransform = new TsTransform(); return false; }
-
-//    public override string ToString()
-//    {
-//        string row = "\n";
-//        string space = " : ";
-//        string s = string.Empty;
-
-//        //Just positions
-//        foreach(KeyValuePair<TsHumanBoneIndex,Vector3> kvp in replayPosition)
-//        {
-//            s = string.Concat(s, kvp.Key,space, kvp.Value,row);
-//        }
-
-//        return s;
-//    }
-
-
-//}
-
-public class TsReplaySaver : MonoBehaviour
+public class TsRecording : MonoBehaviour
 {
     string path; //@"C:\StudentProjects\Burakhan\Tesla Suit\Assets\JsonAttempts\";
     string underScore = "_";
     public TMP_InputField inputName;
-    public TsHumanAnimator avatarBoneInfo;
+    public TsHumanAnimator tsHumanAnimator;
 
     private bool shouldSave;
     private bool isReplayPlaying;
@@ -163,17 +67,21 @@ public class TsReplaySaver : MonoBehaviour
         timer += Time.deltaTime;
         if (shouldSave && timer >timeInterval)
         {
-            //infoToJSon.replayInfo.Add(new Dictionary<TsHumanBoneIndex, Quaternion> { [TsHumanBoneIndex.Hips] = avatarBoneInfo.BoneTransforms[0].rotation });
+            //Do this for Replay
             ReplayInfo rp = new ReplayInfo();
-            foreach(KeyValuePair<TsHumanBoneIndex, Transform> kvp in avatarBoneInfo.BoneTransforms)
+            foreach (KeyValuePair<TsHumanBoneIndex, Transform> kvp in tsHumanAnimator.BoneTransforms)
             {
                 rp.replayPosition.Add(kvp.Key, kvp.Value.position);
                 rp.replayRotation.Add(kvp.Key, kvp.Value.rotation.eulerAngles);
                 rp.replayRotationQuaternion.Add(kvp.Key, MyQuaternion.ConverToMyQuat(kvp.Value.rotation));
             }
-            
+
             infoToJSon.replayInfo.Add(rp);
-            dataGateway.PythonClient.pushSuitData(rp);
+
+            //Do this for Model Training/Testing
+            TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDown.options[trainingTypeDropDown.value].text);
+            ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
+            dataGateway.PythonClient.pushSuitData(imuDataObject);
            
         }
         //Movement recording needs to start with a delay, so that the starting pose could be assumed. 
@@ -209,7 +117,7 @@ public class TsReplaySaver : MonoBehaviour
     }
     void FillTrainingDropDown()
     {
-        string[] names = Enum.GetNames(typeof(TrainingTypes));
+        string[] names = Enum.GetNames(typeof(TrainingType));
         trainingTypeDropDown.ClearOptions();
         trainingTypeDropDown.AddOptions(new List<string>(names));
     }
@@ -217,7 +125,7 @@ public class TsReplaySaver : MonoBehaviour
     public void CreateNewSubject()
     {
         if (inputName.text == string.Empty) { Debug.LogError("Please enter a name for this subject"); return; }
-        infoToJSon = new ReplayObject() { subjectName = inputName.text, trainingType = (TrainingTypes)Enum.Parse(typeof(TrainingTypes), trainingTypeDropDown.options[trainingTypeDropDown.value].text) };
+        infoToJSon = new ReplayObject() { subjectName = inputName.text, trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDown.options[trainingTypeDropDown.value].text) };
         startRecordingField.SetActive(true);
         createSubjectField.SetActive(false);
 
@@ -257,7 +165,7 @@ public class TsReplaySaver : MonoBehaviour
         replayBar.value = 0;
         currentIndex = 0;
         isReplayPlaying = false;
-        avatarBoneInfo.Replay = false;
+        tsHumanAnimator.Replay = false;
     }
 
     public void FreeLook()
@@ -268,14 +176,14 @@ public class TsReplaySaver : MonoBehaviour
         replayBar.value = 0;
         currentIndex = 0;
         isReplayPlaying = false;
-        avatarBoneInfo.Replay = false;
+        tsHumanAnimator.Replay = false;
     }
     public void Replay()
     {
         shouldSave = false;
         if (coroutineRunning) return;
         coroutine = Replayy();
-        avatarBoneInfo.Replay = true;
+        tsHumanAnimator.Replay = true;
         StartCoroutine(coroutine);
 
     }
@@ -311,7 +219,7 @@ public class TsReplaySaver : MonoBehaviour
         while (currentIndex < frameCount)
         {
             yield return new WaitUntil(() => isReplayPlaying == true);
-            avatarBoneInfo.ReplayUpdate(player[currentIndex]);
+            tsHumanAnimator.ReplayUpdate(player[currentIndex]);
             yield return new WaitForEndOfFrame();
             currentIndex += 1;
             replayBar.value = currentIndex;
@@ -341,7 +249,7 @@ public class TsReplaySaver : MonoBehaviour
         replayButton.image.sprite = Play;
         replayBar.value = 0;
         currentIndex = 0;
-        avatarBoneInfo.Replay = false;
+        tsHumanAnimator.Replay = false;
 
     }
     //used in the editor

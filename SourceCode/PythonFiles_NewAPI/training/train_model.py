@@ -1,4 +1,4 @@
-from training.ModelTrainer import ModelTrainer
+from ModelTrainer import ModelTrainer
 from data.DataManager import DataManager
 
 model_trainer = ModelTrainer()

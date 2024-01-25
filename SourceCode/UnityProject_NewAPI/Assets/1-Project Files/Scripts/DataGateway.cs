@@ -5,6 +5,7 @@ using UnityEngine;
 public class DataGateway : MonoBehaviour
 {
     private PythonClient _pythonClient;
+    public TrainingType recognizedExercise = TrainingType.Plank_Hold;
     public PythonClient PythonClient { get => _pythonClient; }
     // Start is called before the first frame update
     void Start()
