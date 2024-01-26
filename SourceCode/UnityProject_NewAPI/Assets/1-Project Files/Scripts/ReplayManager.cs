@@ -33,7 +33,7 @@ public class ReplayManager : MonoBehaviour
         FillReplayDropDown();
     }
 
-    void FillReplayDropDown()
+    public void FillReplayDropDown()
     {
         //Get all Jsons
         DirectoryInfo dir = new System.IO.DirectoryInfo(path);
