@@ -2653,8 +2653,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 600300459}
-        m_TargetAssemblyTypeName: TsReplaySaver, Assembly-CSharp
+      - m_Target: {fileID: 142607653}
+        m_TargetAssemblyTypeName: ReplayManager, Assembly-CSharp
         m_MethodName: Replay
         m_Mode: 1
         m_Arguments:
@@ -2665,8 +2665,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 600300459}
-        m_TargetAssemblyTypeName: TsReplaySaver, Assembly-CSharp
+      - m_Target: {fileID: 142607653}
+        m_TargetAssemblyTypeName: ReplayManager, Assembly-CSharp
         m_MethodName: PlayPauseReplay
         m_Mode: 1
         m_Arguments:

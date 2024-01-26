@@ -130,10 +130,10 @@ public class TsHumanAnimator : MonoBehaviour
             Quaternion targetRotation;
             if (ri.replayRotationQuaternion.TryGetValue(boneIndex, out my))
             {
-                if (boneIndex == TsHumanBoneIndex.Hips)
-                {
-                    targetRotation = Inverse(MyQuaternion.ConvertToQuat(my),true,true,true);
-                }else
+                //if (boneIndex == TsHumanBoneIndex.Hips)
+                //{
+                //    targetRotation = Inverse(MyQuaternion.ConvertToQuat(my),true,true,true);
+                //}else
                 targetRotation = MyQuaternion.ConvertToQuat(my);
             }
             else continue;

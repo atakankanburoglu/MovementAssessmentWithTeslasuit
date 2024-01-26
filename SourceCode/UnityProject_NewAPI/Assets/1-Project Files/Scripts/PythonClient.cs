@@ -52,12 +52,12 @@ public class PythonClient
                     ImuDataObject dataToSend = (ImuDataObject)replayInfoQueue.Dequeue();
                     string csv = dataToSend.ToCSV(";", filtered: true);
                     publisher.SendFrame("ImuDataStream " + csv);
-                    UnityEngine.Debug.Log("message sent");
+                    //UnityEngine.Debug.Log("message sent");
                 }
                 if(sampleType != null)
                 {
                     publisher.SendFrame("TrainingFinished " + sampleType);
-                    UnityEngine.Debug.Log("message sent");
+                    //UnityEngine.Debug.Log("message sent");
                 }
                 Thread.Sleep(1);
             }

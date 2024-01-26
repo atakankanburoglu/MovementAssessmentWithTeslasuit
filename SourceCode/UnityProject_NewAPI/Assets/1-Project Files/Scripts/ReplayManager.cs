@@ -55,6 +55,18 @@ public class ReplayManager : MonoBehaviour
 
     }
 
+    public void OptionChosenFromDropDown()
+    {
+        if (coroutineRunning) StopCoroutine(coroutine);
+        coroutineRunning = false;
+        replayButton.image.sprite = Play;
+        replayBar.value = 0;
+        currentIndex = 0;
+        isReplayPlaying = false;
+        tsHumanAnimator.Replay = false;
+    }
+
+
     public void Replay()
     {
         if (coroutineRunning) return;
