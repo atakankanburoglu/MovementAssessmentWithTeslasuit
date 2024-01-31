@@ -33,24 +33,28 @@ class Server:
 
             stringPayload = str(payload, "utf-8")
             data = stringPayload.split(";")
-
-            try:
-                row = np.array(data, dtype=np.single)
-            except:
-                print("Count not process: ", message)
+            
+            print("ImuDataStream received")
+            self.send_socket.send_string("ErrorResponseStream true")
+           # try:
+                #row = np.array(data, dtype=np.single)
+#                print("ImuDataStream received")
+               # self.pushResult(self, "Data sent back")
+           # except:
+               # print("Count not process: ", message)
             PerformanceAnalyzer.add_read_data_time_measurement(time.process_time() - t)
 
-            error = self.dataGateway.onNewTeslasuitData(row)
+            #error = self.dataGateway.onNewTeslasuitData(row)
 
 
 
 
 
-            name = error[0]
-            errorData = error[1]
-            csvString = ",".join(["%f" % num for num in errorData])
-            csvString = name + "," + csvString
-            self.send_socket.send_string("ErrorResponseStream " + csvString)
+            #name = error[0]
+            #errorData = error[1]
+            #csvString = ",".join(["%f" % num for num in errorData])
+            #csvString = name + "," + csvString
+            #self.send_socket.send_string("ErrorResponseStream " + csvString)
 
 
 
@@ -65,11 +69,11 @@ class Server:
         while self.threadsRunning:
             if len(self.queue) > 0:
                 name_error = self.queue.pop(0)
-                name = name_error[0]
-                errorData = name_error[1]
-                csvString = ",".join(["%f" % num for num in errorData])
-                csvString = name + ","+csvString
-                self.send_socket.send_string("ErrorResponseStream " + csvString)
+                #name = name_error[0]
+                #errorData = name_error[1]
+                #csvString = ",".join(["%f" % num for num in errorData])
+                #csvString = name + ","+csvString
+                self.send_socket.send_string("ErrorResponseStream " + name_error)
             time.sleep(0.001)
         print("Send Thread Stopped")
 

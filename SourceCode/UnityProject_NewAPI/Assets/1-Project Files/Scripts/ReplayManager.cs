@@ -52,7 +52,6 @@ public class ReplayManager : MonoBehaviour
 
         replayDropDown.ClearOptions();
         replayDropDown.AddOptions(filenames);  
-
     }
 
     public void OptionChosenFromDropDown()

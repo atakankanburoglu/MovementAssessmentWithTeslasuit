@@ -14,10 +14,10 @@ from data.DataAccess import DataAccess
 class DataGateway:
     def __init__(self):
         self.streamSegmentor = StreamSegmentor()
-        self.classifier = PoseClassifier()
-        self.dataRecorder = DataRecorder()
-        self.denoiseProxy = DenoiseProxy()
-        self.repEvaluator = RepEvaluator()
+        #self.classifier = PoseClassifier()
+        #self.dataRecorder = DataRecorder()
+        #self.denoiseProxy = DenoiseProxy()
+        #self.repEvaluator = RepEvaluator()
 
 
     def onNewTeslasuitData(self, suitData):

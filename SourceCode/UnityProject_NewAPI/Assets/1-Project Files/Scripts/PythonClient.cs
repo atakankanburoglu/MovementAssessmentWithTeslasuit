@@ -19,7 +19,15 @@ public class PythonClient
     private Thread _receiverThread;
     private Queue replayInfoQueue = new Queue();
     private Boolean running = false;
+
+    //for Finishing Training Data Transfer
+    private Boolean finished = false;
     private SampleType sampleType;
+
+    //for Model Creation and Usage
+    private Boolean createModel = false;
+    private Boolean chooseModel = false;
+    private String modelInfo;
 
     //private MotionFeedback _motionFeedback;
     //private MocapJoints _mocapJoints;
@@ -43,7 +51,6 @@ public class PythonClient
         using (PublisherSocket publisher = new PublisherSocket())
         {
             publisher.Bind("tcp://*:5555");
-
             while (running)
             {
                 if (replayInfoQueue.Count > 0)
@@ -52,12 +59,21 @@ public class PythonClient
                     ImuDataObject dataToSend = (ImuDataObject)replayInfoQueue.Dequeue();
                     string csv = dataToSend.ToCSV(";", filtered: true);
                     publisher.SendFrame("ImuDataStream " + csv);
-                    //UnityEngine.Debug.Log("message sent");
                 }
-                if(sampleType != null)
+                if(finished)
                 {
                     publisher.SendFrame("TrainingFinished " + sampleType);
-                    //UnityEngine.Debug.Log("message sent");
+                    finished = false;
+                }
+                if (createModel)
+                {
+                    publisher.SendFrame("CreateModel " + modelInfo);
+                    createModel = false;
+                }
+                if (chooseModel)
+                {
+                    publisher.SendFrame("Model " + modelInfo);
+                    chooseModel = false;
                 }
                 Thread.Sleep(1);
             }
@@ -81,14 +97,15 @@ public class PythonClient
                 string message = values[1];
                 values = message.Split(',');
 
+                _dataGateway.onExcerciseRecognized(values[0]);
                 //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
 
-                TrainingType recognizedExercise = (TrainingType)Enum.Parse(typeof(TrainingType), values[0], true);
-                if (recognizedExercise != null)
-                {
-                    _dataGateway.recognizedExercise = recognizedExercise;
-                    Debug.Log($"Recognized: {recognizedExercise}");
-                }
+                //TrainingType recognizedExercise = (TrainingType)Enum.Parse(typeof(TrainingType), values[0], true);
+                //if (recognizedExercise != null)
+                //{
+                //    _dataGateway.recognizedExercise = recognizedExercise;
+                //    Debug.Log($"Recognized: {recognizedExercise}");
+                //}
 
 
                 //int indexOffset = 2;
@@ -123,7 +140,20 @@ public class PythonClient
 
     public void finishSuitTrainingData(SampleType sampleType)
     {
+        finished = true;
         this.sampleType = sampleType;
+    }
+
+    public void createNewModel(String subjectIds, TrainingType trainingType, Algorithm algorithm)
+    {
+        createModel = true;
+        modelInfo = subjectIds + "_" + trainingType + "_" + algorithm;
+    }
+
+    public void chooseModelForTesting(TrainingType trainingType, Algorithm algorithm)
+    {
+        chooseModel = true;
+        modelInfo = trainingType + "_" + algorithm;
     }
 
     public void Stop()

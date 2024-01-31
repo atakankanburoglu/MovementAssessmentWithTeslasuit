@@ -75,7 +75,6 @@ public class TsHumanAnimator : MonoBehaviour
         //*
         var imuData = m_motionProvider.GetImuData(Time.time);
         //*
-        //if replay is true, character will be replayed by TsReplaySaver script
         if(!Replay) Update(skeleton, imuData);
     }
 
