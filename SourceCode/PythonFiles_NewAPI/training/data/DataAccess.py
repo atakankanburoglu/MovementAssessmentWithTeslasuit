@@ -9,8 +9,7 @@ class DataAccess:
             "linearAccel": ["_linearAccel_x", "_linearAccel_y", "_linearAccel_z"],
             "accelerometer": ["_accelerometer_x", "_accelerometer_y", "_accelerometer_z"],
             "gyroscope": ["_gyroscope_x", "_gyroscope_y", "_gyroscope_z"],
-            "magnetometer": ["_magnetometer_x", "_magnetometer_y", "_magnetometer_z"],
-            "temperature": ["_temperature"]
+            "magnetometer": ["_magnetometer_x", "_magnetometer_y", "_magnetometer_z"]
         }
 
     @staticmethod

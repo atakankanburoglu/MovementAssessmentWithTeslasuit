@@ -77,10 +77,10 @@ public class TrainingManager : MonoBehaviour
 
             infoToJSon.replayInfo.Add(rp);
 
-            //Do this for Model Training/Testing
+            //Do this for Model Training
             TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
             ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
-            dataGateway.PythonClient.pushSuitData(imuDataObject);
+            dataGateway.PythonClient.PushSuitData(imuDataObject);
         }
     }
 
@@ -140,7 +140,7 @@ public class TrainingManager : MonoBehaviour
             infoToJSon = null;
 
             SampleType sampleType = (SampleType)Enum.Parse(typeof(SampleType), sampleTypeDropDown.options[sampleTypeDropDown.value].text);
-            dataGateway.PythonClient.finishSuitTrainingData(sampleType);
+            dataGateway.PythonClient.StopTrainingMode(sampleType);
         }
         FillTrainingTypeDropDownSample();
         subjectIDInput.text = null;
@@ -156,7 +156,7 @@ public class TrainingManager : MonoBehaviour
         {
             Algorithm algorithm = (Algorithm)Enum.Parse(typeof(Algorithm), algorithmDropDownModel.options[algorithmDropDownModel.value].text);
             TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownModel.options[trainingTypeDropDownModel.value].text);
-            dataGateway.PythonClient.createNewModel(subjectIDsInput.text, trainingType, algorithm);
+            dataGateway.PythonClient.CreateNewModel(subjectIDsInput.text, trainingType, algorithm);
         }
         
     }

@@ -1,11 +1,11 @@
 import threading
 import time
-
 import numpy as np
 import zmq
 
 from PerformanceAnalyzer import PerformanceAnalyzer
-
+from enums.State import State
+from enums.ApplicationMode import ApplicationMode
 
 class Server:
     def __init__(self, dataGateway):
@@ -13,7 +13,7 @@ class Server:
         self.context = zmq.Context()
         self.receive_socket = self.context.socket(zmq.SUB)
         self.receive_socket.connect("tcp://localhost:5555")
-        self.receive_socket.setsockopt_string(zmq.SUBSCRIBE, "ImuDataStream")
+        self.receive_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         self.receive_socket.setsockopt(zmq.CONFLATE, 1)
         self.send_socket = self.context.socket(zmq.PUB)
         self.send_socket.bind("tcp://*:6666")
@@ -23,6 +23,8 @@ class Server:
         self.thread2 = None
         self.threadsRunning = False
 
+        self.applicationMode = ApplicationMode.IDLE
+
     def receive_thread(self):
         print("Receive Thread Started")
         while self.threadsRunning:
@@ -31,20 +33,53 @@ class Server:
             t = time.process_time()
             topic, payload = message.split()
 
-            stringPayload = str(payload, "utf-8")
-            data = stringPayload.split(";")
+            print(topic + " received")
+
+            if(topic == "ImuDataStream" & (self.applicationMode == ApplicationMode.TRAINING | self.applicationMode == ApplicationMode.TESTING)):
+                stringPayload = str(payload, "utf-8")
+                data = stringPayload.split(";")
+                try:
+                    row = np.array(data, dtype=np.single)
+                    self.dataGateway.onImuDataStream(row)
+                except:
+                    print("Count not process ImuDataStream: ", message)
+            if(topic == "TrainingMode"):
+                stringPayload = str(payload, "utf-8")
+                data = stringPayload.split(";")
+                if(data[0] == State.INIT):
+                    self.dataGateway.on_training_init(data[1])
+                    self.applicationMode = ApplicationMode.TRAINING                
+                if(data[0] == State.FINISHED):
+                    self.dataGateway.on_training_finished(data[1])
+                    self.applicationMode = ApplicationMode.IDLE  
+            if(topic == "CreateModel"):
+                stringPayload = str(payload, "utf-8")
+                data = stringPayload.split(";")
+                self.dataGateway.on_create_feedback_model(data)
+                self.applicationMode = ApplicationMode.MODELCREATION            
+            if(topic == "TestingMode"):
+                stringPayload = str(payload, "utf-8")
+                data = stringPayload.split(";")
+                if(data[0] == State.INIT):
+                    self.thread2 = threading.Thread(target=self.send_thread)
+                    self.thread2.start()
+                    self.dataGateway.on_testing_init(data[1])
+                    self.applicationMode = ApplicationMode.TESTING                
+                if(data[0] == State.FINISHED):
+                    self.thread2.stop();
+                    self.applicationMode = ApplicationMode.IDLE  
+
             
-            print("ImuDataStream received")
-            self.send_socket.send_string("ErrorResponseStream true")
-           # try:
-                #row = np.array(data, dtype=np.single)
+            #self.send_socket.send_string("ErrorResponseStream true")
+           # 
+                #
 #                print("ImuDataStream received")
                # self.pushResult(self, "Data sent back")
            # except:
                # print("Count not process: ", message)
             PerformanceAnalyzer.add_read_data_time_measurement(time.process_time() - t)
 
-            #error = self.dataGateway.onNewTeslasuitData(row)
+            #error = 
 
 
 
@@ -82,13 +117,12 @@ class Server:
         self.thread1 = threading.Thread(target=self.receive_thread)
         self.thread1.start()
 
-        # self.thread2 = threading.Thread(target=self.send_thread)
-        # self.thread2.start()
+        
 
     def stop(self):
         self.threadsRunning = False
         self.thread1.join()
-        # self.thread2.join()
+        self.thread2.join()
 
     def pushResult(self, name_error):
         self.queue.append(name_error)

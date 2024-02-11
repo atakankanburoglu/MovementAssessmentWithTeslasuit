@@ -12,10 +12,9 @@ public class TestingManager : MonoBehaviour
     [SerializeField]
     private Dropdown algorithmDropDownModel;
     [SerializeField]
-    private Dropdown trainingTypeDropDownModel;
+    private Dropdown crossValidationDropDown;
     [SerializeField]
     private GameObject modelSettingPanel;
-
 
     [SerializeField]
     private TMP_InputField recognizedExerciseOutput;
@@ -30,12 +29,26 @@ public class TestingManager : MonoBehaviour
     [SerializeField]
     private GameObject feedbackPanel;
 
-    private DataGateway dataGateway;
+    public DataGateway dataGateway;
+
+    private Boolean running;
+
+    public TsHumanAnimator tsHumanAnimator;
+
+    private TrainingType trainingType;
     void Start()
     {
-        dataGateway = FindObjectOfType<DataGateway>();
         FillTrainingTypeDropDownModel();
         FillAlgorithmDropDownModel();
+    }
+
+    void Update()
+    {
+        if (running)
+        {
+            ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
+            dataGateway.PythonClient.PushSuitData(imuDataObject);
+        }
     }
 
     public void FillRecognizedExcerciseOutputInput(TrainingType trainingType)
@@ -59,7 +72,20 @@ public class TestingManager : MonoBehaviour
     public void ChooseModel()
     {
         Algorithm algorithm = (Algorithm)Enum.Parse(typeof(Algorithm), algorithmDropDownModel.options[algorithmDropDownModel.value].text);
-        TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownModel.options[trainingTypeDropDownModel.value].text);
-        dataGateway.PythonClient.chooseModelForTesting(trainingType, algorithm);
+        dataGateway.PythonClient.StartTestingMode(algorithm, true);
+    }
+
+    public void StartFeedback()
+    {
+        running = true;
+    }
+    public void PauseFeedback()
+    {
+        running = false;
+    }
+    public void StopFeedback()
+    {
+        dataGateway.PythonClient.StopTestingMode();
+        running = false;
     }
 }

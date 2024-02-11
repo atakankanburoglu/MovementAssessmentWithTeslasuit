@@ -17,17 +17,21 @@ public class PythonClient
 {
     private Thread _senderThread;
     private Thread _receiverThread;
-    private Queue replayInfoQueue = new Queue();
+    private Queue imuDataQueue = new Queue();
     private Boolean running = false;
 
     //for Finishing Training Data Transfer
-    private Boolean finished = false;
+    private State trainingMode = State.IDLE;
+    private String sampleInfo;
     private SampleType sampleType;
 
-    //for Model Creation and Usage
+    //for Model Creation
     private Boolean createModel = false;
-    private Boolean chooseModel = false;
     private String modelInfo;
+
+    //for Feedback
+    private State testingMode = State.IDLE;
+    private String modelInfoForTesting;
 
     //private MotionFeedback _motionFeedback;
     //private MocapJoints _mocapJoints;
@@ -53,27 +57,36 @@ public class PythonClient
             publisher.Bind("tcp://*:5555");
             while (running)
             {
-                if (replayInfoQueue.Count > 0)
+                if (imuDataQueue.Count > 0 && (trainingMode == State.RUNNING || testingMode == State.RUNNING))
                 {
 
-                    ImuDataObject dataToSend = (ImuDataObject)replayInfoQueue.Dequeue();
+                    ImuDataObject dataToSend = (ImuDataObject)imuDataQueue.Dequeue();
                     string csv = dataToSend.ToCSV(";", filtered: true);
                     publisher.SendFrame("ImuDataStream " + csv);
                 }
-                if(finished)
+                if(trainingMode == State.FINISHED)
                 {
-                    publisher.SendFrame("TrainingFinished " + sampleType);
-                    finished = false;
+                    publisher.SendFrame("TrainingMode " + trainingMode + ";" + sampleType);
+                    trainingMode = State.IDLE;
+                }
+                if (trainingMode == State.INIT)
+                {
+                    publisher.SendFrame("TrainingMode " + trainingMode + ";" + sampleInfo);
+                    trainingMode = State.RUNNING;
                 }
                 if (createModel)
                 {
                     publisher.SendFrame("CreateModel " + modelInfo);
                     createModel = false;
                 }
-                if (chooseModel)
+                if (testingMode == State.INIT)
                 {
-                    publisher.SendFrame("Model " + modelInfo);
-                    chooseModel = false;
+                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
+                }
+                if (testingMode == State.FINISHED)
+                {
+                    publisher.SendFrame("TestingMode " + testingMode);
+                    testingMode = State.IDLE;
                 }
                 Thread.Sleep(1);
             }
@@ -133,27 +146,38 @@ public class PythonClient
         NetMQConfig.Cleanup(); // this line is needed to prevent unity freeze after one use, not sure why yet
     }
 
-    public void pushSuitData(ImuDataObject data)
+    public void PushSuitData(ImuDataObject data)
     {
-        replayInfoQueue.Enqueue(data);
+        imuDataQueue.Enqueue(data);
     }
 
-    public void finishSuitTrainingData(SampleType sampleType)
+    public void StartTrainingMode(String subjectId, TrainingType trainingType)
     {
-        finished = true;
+        trainingMode = State.INIT;
+        this.sampleInfo = subjectId + "_" + trainingType;
+    }
+
+    public void StopTrainingMode(SampleType sampleType)
+    {
+        trainingMode = State.FINISHED;
         this.sampleType = sampleType;
     }
 
-    public void createNewModel(String subjectIds, TrainingType trainingType, Algorithm algorithm)
+    public void CreateNewModel(String subjectIds, TrainingType trainingType, Algorithm algorithm)
     {
         createModel = true;
         modelInfo = subjectIds + "_" + trainingType + "_" + algorithm;
     }
 
-    public void chooseModelForTesting(TrainingType trainingType, Algorithm algorithm)
+    public void StartTestingMode(Algorithm algorithm, Boolean newRecognitionModel)
     {
-        chooseModel = true;
-        modelInfo = trainingType + "_" + algorithm;
+        testingMode = State.INIT;
+        modelInfoForTesting = algorithm + "_" + newRecognitionModel;
+    }
+
+    public void StopTestingMode()
+    {
+        testingMode = State.FINISHED;
     }
 
     public void Stop()

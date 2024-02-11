@@ -1,4 +1,6 @@
 public enum Algorithm
 {
-    SVM
+    LR,
+    RF,
+    NN
 }

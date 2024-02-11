@@ -11436,6 +11436,8 @@ MonoBehaviour:
   pauseButton: {fileID: 1008019120}
   stopButton: {fileID: 1789741910}
   feedbackPanel: {fileID: 733117329}
+  dataGateway: {fileID: 326949998}
+  tsHumanAnimator: {fileID: 1324782058}
 --- !u!4 &1281827035
 Transform:
   m_ObjectHideFlags: 0
