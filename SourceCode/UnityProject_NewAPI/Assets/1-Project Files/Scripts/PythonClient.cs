@@ -23,16 +23,17 @@ public class PythonClient
 
     //for Finishing Training Data Transfer
     private State trainingMode = State.IDLE;
-    private String sampleInfo;
+    private string sampleInfo;
     private SampleType sampleType;
 
     //for Model Creation
     private Boolean createModel = false;
-    private String modelInfo;
+    private string modelInfo;
 
     //for Feedback
     private State testingMode = State.IDLE;
-    private String modelInfoForTesting;
+    private bool getModels = false;
+    private string modelInfoForTesting;
 
     //private MotionFeedback _motionFeedback;
     //private MocapJoints _mocapJoints;
@@ -95,7 +96,16 @@ public class PythonClient
                 }
                 if (testingMode == State.INIT)
                 {
-                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
+                    if (getModels)
+                    {
+                        publisher.SendFrame("TestingMode " + testingMode);
+
+                    } else
+                    {
+                        publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
+                        testingMode = State.RUNNING;
+                    }
+                
                 }
                 if (testingMode == State.FINISHED)
                 {
@@ -115,16 +125,25 @@ public class PythonClient
         using (SubscriberSocket subscriber = new SubscriberSocket())
         {
             subscriber.Connect("tcp://localhost:6666");
-            subscriber.Subscribe("ErrorResponseStream");
+            //subscriber.Subscribe("ErrorResponseStream");
+            subscriber.SubscribeToAnyTopic();
 
             while (running)
             {
                 string payload = subscriber.ReceiveFrameString();
                 String[] values = payload.Split(' ');
+                String topic = values[0];
                 string message = values[1];
-                values = message.Split(',');
 
-                _dataGateway.onExcerciseRecognized(values[0]);
+                if(topic == "ErrorResponseStream")
+                {
+
+                    _dataGateway.OnExcerciseRecognized(message);
+                } else
+                if (topic == "TestingMode")
+                {
+                    _dataGateway.OnModelListReceived(message);
+                }
                 //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
 
                 //TrainingType recognizedExercise = (TrainingType)Enum.Parse(typeof(TrainingType), values[0], true);
@@ -183,7 +202,13 @@ public class PythonClient
         modelInfo = subjectIds + "_" + trainingType + "_" + algorithm;
     }
 
-    public void StartTestingMode(Algorithm algorithm, Boolean newRecognitionModel)
+    public void GetModels()
+    {
+        testingMode = State.INIT;
+        getModels = true;
+    }
+
+    public void StartTestingMode(String algorithm, Boolean newRecognitionModel)
     {
         testingMode = State.INIT;
         modelInfoForTesting = algorithm + "_" + newRecognitionModel;

@@ -1,6 +1,5 @@
 public enum CrossValidation
 {
     LOO,
-    RF,
-    NN
+    LOSO
 }

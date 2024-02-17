@@ -64,8 +64,12 @@ class Server:
                 if(data[0] == "INIT"):
                     self.thread2 = threading.Thread(target=self.send_thread)
                     self.thread2.start()
-                    self.dataGateway.on_testing_init(data[1], )
-                    self.applicationMode = ApplicationMode.TESTING                
+                    if(data.count == 1):
+                        model_files = self.dataGateway.on_get_model_list()
+                        self.pushResult("TestingMode " + model_files)
+                    else:
+                        self.dataGateway.on_testing_init(data[1])
+                        self.applicationMode = ApplicationMode.TESTING   
                 if(data[0] == "FINISHED"):
                     self.thread2.stop();
                     self.applicationMode = ApplicationMode.IDLE  
@@ -104,12 +108,8 @@ class Server:
         print("Send Thread Started")
         while self.threadsRunning:
             if len(self.queue) > 0:
-                name_error = self.queue.pop(0)
-                #name = name_error[0]
-                #errorData = name_error[1]
-                #csvString = ",".join(["%f" % num for num in errorData])
-                #csvString = name + ","+csvString
-                self.send_socket.send_string("ErrorResponseStream " + name_error)
+                result = self.queue.pop(0)
+                self.send_socket.send_string(result)
             time.sleep(0.001)
         print("Send Thread Stopped")
 
@@ -118,15 +118,14 @@ class Server:
         self.thread1 = threading.Thread(target=self.receive_thread)
         self.thread1.start()
 
-        
 
     def stop(self):
         self.threadsRunning = False
         self.thread1.join()
         self.thread2.join()
 
-    def pushResult(self, name_error):
-        self.queue.append(name_error)
+    def pushResult(self, result):
+        self.queue.append(result)
 
 
 

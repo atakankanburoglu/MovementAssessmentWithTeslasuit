@@ -17,13 +17,13 @@ public class ModeManager : MonoBehaviour
     [SerializeField]
     private GameObject cancelButton;
 
+    public TestingManager testingManager;
 
     void Start()
     {
         FillModeDropDown();
     }
    
-
     void FillModeDropDown()
     {
         string[] names = Enum.GetNames(typeof(ApplicationMode));
@@ -40,6 +40,7 @@ public class ModeManager : MonoBehaviour
             testingUI.SetActive(true);
             trainingUI.SetActive(false);
             cancelButton.SetActive(true);
+            testingManager.GetModelsForDropdown();
         }
         else if (mode == ApplicationMode.Replay)
         {

@@ -9,13 +9,13 @@ using TsSDK;
 [Serializable]
 public class ImuDataObject
 {
-    public TrainingType type;
+    public TrainingType trainingType;
     public Dictionary<TsHumanBoneIndex, TsImuSensorData> imuData;
     public double timestamp;
 
-    public ImuDataObject(TrainingType type, Dictionary<TsHumanBoneIndex, TsImuSensorData> imuData, double timestamp)
+    public ImuDataObject(TrainingType trainingType, Dictionary<TsHumanBoneIndex, TsImuSensorData> imuData, double timestamp)
     {
-        this.type = type;
+        this.trainingType = trainingType;
         this.imuData = imuData;
         this.timestamp = timestamp;
     }
@@ -23,10 +23,11 @@ public class ImuDataObject
     /**
      * filtered: Whether CSV should be filtered for transmission to Python
      */
-    public String ToCSV(string seperator, bool filtered = true)
+    public String ToCSV(string seperator)
     {
         StringBuilder sb = new StringBuilder();
         sb.Append(timestamp.ToString(CultureInfo.InvariantCulture)).Append(seperator);
+        sb.Append(this.trainingType).Append(seperator);
 
         foreach (var boneIndex in TsHumanBones.SuitBones)
         {
@@ -71,6 +72,7 @@ public class ImuDataObject
     {
         StringBuilder sb = new StringBuilder();
         sb.Append("Timestamp").Append(seperator);
+        sb.Append("TrainingType").Append(seperator);
 
         foreach (var boneIndex in TsHumanBones.SuitBones)
         {

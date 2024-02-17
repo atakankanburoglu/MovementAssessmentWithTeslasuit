@@ -1,7 +1,8 @@
 import time
 import numpy as np
 import csv
-
+import pandas as pd
+import os
 import Config
 from PerformanceAnalyzer import PerformanceAnalyzer
 from core.DataRecorder import DataRecorder
@@ -77,11 +78,19 @@ class DataGateway:
 
     def on_create_feedback_model(self, init):
         data = init.split("_")
-        #TODO! retrieve training data from csv depoending on subject Ids (using regex)
-        #training_data = self.dataRecorder.get_data_from_csv()
-        training_data = data[0]
-        ModelTrainer.train_feedback_model(training_data, data[0, data[1], data[2]])
+        subject_ids = data[0].split(",");
+        training_type = data[1]
+        algorithm = data[2]
+        training_data = pd.DataFrame()
+        for ids in subject_ids:
+            training_data.append(self.dataRecorder.get_data_from_csv(ids, training_type, training_data.empty))
+        ModelTrainer.train_feedback_model(training_data, algorithm, subject_ids + training_type)
         t = time.process_time()
+
+    def on_get_model_list():
+        thisdir = os.getcwd()
+        files = [f for f in os.listdir(thisdir + "core/ml-models/")]
+        return files
 
     def on_testing_init(self, init):
         data = init.split("_")
@@ -92,9 +101,8 @@ class DataGateway:
         t = time.process_time()
 
     def on_create_exercise_recognition_model(self):
-        #TODO! retrieve training data from csv depoending on (most recent?) model
-        #training_data = self.dataRecorder.get_data_from_csv()
-        ModelTrainer.train_feedback_model(training_data, data[0, data[1], data[2]])
+        training_data = self.dataRecorder.get_data_from_csv_for_exercise_recognition()
+        ModelTrainer.train_exercise_recognition_model(training_data)
 
 
     def get_recorded_data(self):

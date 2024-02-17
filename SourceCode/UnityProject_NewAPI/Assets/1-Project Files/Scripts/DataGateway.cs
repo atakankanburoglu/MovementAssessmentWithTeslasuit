@@ -19,10 +19,15 @@ public class DataGateway : MonoBehaviour
         _pythonClient = new PythonClient();
     }
 
-    public void onExcerciseRecognized(String exercise)
+    public void OnExcerciseRecognized(string exercise)
     {
         TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), exercise);
         testingManager.FillRecognizedExcerciseOutputInput(trainingType);
+    }
+
+    public void OnModelListReceived(string modelList)
+    {
+        testingManager.SetModelsForDropdown(new List<string>(modelList.Split(',')));
     }
 
     // Update is called once per frame

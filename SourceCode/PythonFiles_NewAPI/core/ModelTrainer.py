@@ -23,22 +23,22 @@ class ModelTrainer:
     @staticmethod
     def train_exercise_recognition_model(training_data):
         print("Creating Excercise Recognition Model...")
-
-        X = training_data.drop(["label"], axis=1)
-        Y = strippedData["label"]
+        #TODO: how should this look?
+        X = training_data.x.tolist()
+        Y = training_data.y
 
         print("Building SVM Model with ", len(Y), " data points.")
         supportVectorMachine = svm.SVC()
         supportVectorMachine.fit(X, Y)
-
+        
+        t = time.time()
         print("Dumping Excercise Recognition Model Results")
-        dump(supportVectorMachine, "../core/ml-models/svm_model")
+        dump(supportVectorMachine, "../core/ml-models/svm_model" + str(int(t)))
 
     @staticmethod
-    def train_feedback_model(training_data, subject_ids, training_type, algorithm):
-        save_string = subject_ids + training_type
-        X = training_data.drop(["label"], axis=1)
-        Y = training_data["label"]
+    def train_feedback_model(training_data, algorithm, save_string):
+        X = training_data.x.tolist()
+        Y = training_data.y
         if(algorithm == Algorithm.LR):
             lr = linear_model.LinearRegression()
             lr.fit(X, Y)
