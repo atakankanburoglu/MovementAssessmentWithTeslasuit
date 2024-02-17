@@ -23,18 +23,17 @@ class DataGateway:
         #self.repEvaluator = RepEvaluator()
 
     def on_training_init(self, init):
-         data = stringPayload.split("_")
+         data = init.split("_")
          self.dataRecorder = DataRecorder(data[0], data[1]);
         
 
     def on_imu_data_stream(self, suitData, application_mode):
         t = time.process_time()
         
-        if application_mode == ApplicationMode.ApplicationMode.TRAINING:
+        if application_mode == ApplicationMode.TRAINING:
             #Write to DataRecorder
-            timestamp = DataAccess.get_timestamp(suitData)
-            self.dataRecorder.log_data(np.insert(data, 0, timestamp), segmentDetected)
-        if application_mode == ApplicationMode.ApplicationMode.TESTING:
+            self.dataRecorder.log_data(suitData)
+        if application_mode == ApplicationMode.TESTING:
            #Send to ModelTester
            exerciseRecognition = ModelTester.train_exercise_recognition_model(suitData)
            if exerciseRecognition != "":

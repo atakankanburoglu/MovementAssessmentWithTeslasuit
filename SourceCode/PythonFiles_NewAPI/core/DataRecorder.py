@@ -1,9 +1,10 @@
 import pandas as pd
 
 import Config
+import time
 from Plotter import Plotter
 from data.DataAccess import DataAccess
-
+import csv
 
 class DataRecorder:
     def __init__(self, subjectId, trainingType):
@@ -13,16 +14,15 @@ class DataRecorder:
         self.recordedSegments = []
         #self.plotter = Plotter()
 
-    def log_data(self, suit_data, segmentDetected):
+    def log_data(self, suit_data):
         self.recordedData.append(suit_data)
-        self.recordedSegments.append(segmentDetected)
 
     def save_data_to_csv(self, sampleType):
-        with open("/samples/" + subjectId + '_' + trainingType + +'_' + sampleType + '.csv', 'w', newline='') as file:
+        t = time.time()
+        with open("core/samples/" + self.subjectId + '_' + self.trainingType +'_' + sampleType +'_' + str(int(t)) + '.csv', 'w', newline='') as file:
             writer = csv.writer(file)
-            recordedSegmentsIt = iter(recordedSegments)
-            for row in recordedData:
-                writer.writerow(next(recordedSegmentsIt), row)
+            for row in self.recordedData:
+                writer.writerow(row)
 
     def dataToDataframe(self):
         dataFrame = pd.DataFrame(self.recordedData, columns=DataAccess.result_columns())

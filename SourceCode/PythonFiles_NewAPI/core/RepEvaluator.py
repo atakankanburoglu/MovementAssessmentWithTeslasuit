@@ -4,8 +4,8 @@ import time
 from joblib import load
 import numpy as np
 
-import ClassificationResult
-from ClassificationResult import ClassificationExercise
+import training.ClassificationResult
+from training.ClassificationResult import ClassificationExercise
 import Config
 from data.DataAccess import DataAccess
 
@@ -50,7 +50,7 @@ class RepEvaluator:
         self.repStartedTimestamp = timestamp
 
 
-    def evaluate(self, timestamp, data, exercise: ClassificationExercise, _type: ClassificationResult.ClassificationType):
+    def evaluate(self, timestamp, data, exercise: ClassificationExercise, _type: training.ClassificationResult.ClassificationType):
         if not Config.EVALUATE:
             return self.noError, False
 

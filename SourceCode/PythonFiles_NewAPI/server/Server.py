@@ -4,7 +4,6 @@ import numpy as np
 import zmq
 
 from PerformanceAnalyzer import PerformanceAnalyzer
-from enums.State import State
 from enums.ApplicationMode import ApplicationMode
 
 class Server:
@@ -32,40 +31,42 @@ class Server:
             message = self.receive_socket.recv(copy=True)
             t = time.process_time()
             topic, payload = message.split()
+            
+            string_topic = str(topic, "utf-8")
 
-            print(topic + " received")
+            print(string_topic + " received")
 
-            if(topic == "ImuDataStream" & (self.applicationMode == ApplicationMode.TRAINING | self.applicationMode == ApplicationMode.TESTING)):
+            if(string_topic == "ImuDataStream" and (self.applicationMode == ApplicationMode.TRAINING or self.applicationMode == ApplicationMode.TESTING)):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
                 try:
-                    row = np.array(data, dtype=np.single)
-                    self.dataGateway.onImuDataStream(row)
+                    row = np.array(data)
+                    self.dataGateway.on_imu_data_stream(row, self.applicationMode)
                 except:
-                    print("Count not process ImuDataStream: ", message)
-            if(topic == "TrainingMode"):
+                    print("Count not process ImuDataStream: ", data)
+            if(string_topic == "TrainingMode"):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
-                if(data[0] == State.INIT):
+                if(data[0] == "INIT"):
                     self.dataGateway.on_training_init(data[1])
                     self.applicationMode = ApplicationMode.TRAINING                
-                if(data[0] == State.FINISHED):
+                if(data[0] == "FINISHED"):
                     self.dataGateway.on_training_finished(data[1])
                     self.applicationMode = ApplicationMode.IDLE  
-            if(topic == "CreateModel"):
+            if(string_topic == "CreateModel"):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
                 self.dataGateway.on_create_feedback_model(data)
                 self.applicationMode = ApplicationMode.MODELCREATION            
-            if(topic == "TestingMode"):
+            if(string_topic == "TestingMode"):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
-                if(data[0] == State.INIT):
+                if(data[0] == "INIT"):
                     self.thread2 = threading.Thread(target=self.send_thread)
                     self.thread2.start()
-                    self.dataGateway.on_testing_init(data[1])
+                    self.dataGateway.on_testing_init(data[1], )
                     self.applicationMode = ApplicationMode.TESTING                
-                if(data[0] == State.FINISHED):
+                if(data[0] == "FINISHED"):
                     self.thread2.stop();
                     self.applicationMode = ApplicationMode.IDLE  
 

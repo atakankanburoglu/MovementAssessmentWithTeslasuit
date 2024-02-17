@@ -53,13 +53,14 @@ public class TestingManager : MonoBehaviour
 
     public void FillRecognizedExcerciseOutputInput(TrainingType trainingType)
     {
+        this.trainingType = trainingType;
         recognizedExerciseOutput.text = Enum.GetName(typeof(TrainingType), trainingType);
     }
     void FillTrainingTypeDropDownModel()
     {
         string[] names = Enum.GetNames(typeof(TrainingType));
-        trainingTypeDropDownModel.ClearOptions();
-        trainingTypeDropDownModel.AddOptions(new List<string>(names));
+        crossValidationDropDown.ClearOptions();
+        crossValidationDropDown.AddOptions(new List<string>(names));
     }
 
     void FillAlgorithmDropDownModel()
@@ -87,5 +88,14 @@ public class TestingManager : MonoBehaviour
     {
         dataGateway.PythonClient.StopTestingMode();
         running = false;
+    }
+
+    public void Cancel()
+    {
+        FillTrainingTypeDropDownModel();
+        FillAlgorithmDropDownModel();
+        feedbackPanel.SetActive(false);
+        modelSettingPanel.SetActive(true);
+        recognizedExerciseOutput.gameObject.SetActive(false);
     }
 }

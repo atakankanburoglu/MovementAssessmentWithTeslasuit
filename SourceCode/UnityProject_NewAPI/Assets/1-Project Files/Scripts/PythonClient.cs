@@ -18,6 +18,7 @@ public class PythonClient
     private Thread _senderThread;
     private Thread _receiverThread;
     private Queue imuDataQueue = new Queue();
+    private Boolean sendHeader = false;
     private Boolean running = false;
 
     //for Finishing Training Data Transfer
@@ -59,10 +60,22 @@ public class PythonClient
             {
                 if (imuDataQueue.Count > 0 && (trainingMode == State.RUNNING || testingMode == State.RUNNING))
                 {
-
+                    
                     ImuDataObject dataToSend = (ImuDataObject)imuDataQueue.Dequeue();
-                    string csv = dataToSend.ToCSV(";", filtered: true);
-                    publisher.SendFrame("ImuDataStream " + csv);
+                    if (sendHeader)
+                    {
+                        string header = dataToSend.GetCsvHeader(";");
+                        publisher.SendFrame("ImuDataStream " + header);
+                        string csv = dataToSend.ToCSV(";");
+                        publisher.SendFrame("ImuDataStream " + csv);
+                        sendHeader = false;
+                    }
+                    else
+                    {
+                        string csv = dataToSend.ToCSV(";");
+                        publisher.SendFrame("ImuDataStream " + csv);
+                    }
+
                 }
                 if(trainingMode == State.FINISHED)
                 {
@@ -73,6 +86,7 @@ public class PythonClient
                 {
                     publisher.SendFrame("TrainingMode " + trainingMode + ";" + sampleInfo);
                     trainingMode = State.RUNNING;
+                    sendHeader = true;
                 }
                 if (createModel)
                 {

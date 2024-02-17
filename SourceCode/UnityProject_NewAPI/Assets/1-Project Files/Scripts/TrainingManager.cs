@@ -77,10 +77,13 @@ public class TrainingManager : MonoBehaviour
 
             infoToJSon.replayInfo.Add(rp);
 
-            //Do this for Model Training
-            TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
-            ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
-            dataGateway.PythonClient.PushSuitData(imuDataObject);
+            if (tsHumanAnimator.ImuData.Count > 0)
+            {
+                //Do this for Model Training
+                TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
+                ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
+                dataGateway.PythonClient.PushSuitData(imuDataObject);
+            }
         }
     }
 
@@ -112,17 +115,19 @@ public class TrainingManager : MonoBehaviour
             Debug.LogError("Please enter a name for this subject");
             return;
         }
-        infoToJSon = new ReplayObject() { subjectName = subjectIDInput.text, trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text) };
+        var trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
+        infoToJSon = new ReplayObject() { subjectName = subjectIDInput.text, trainingType = trainingType};
         recordingPanel.SetActive(true);
         sampleSettingPanel.SetActive(false);
 
-
+        dataGateway.PythonClient.StartTrainingMode(subjectIDInput.text, trainingType);
         Debug.Log("object created");
     }
     public void StartRecording()
     {
         if (infoToJSon == null) return;
-        shouldSave = true;
+        shouldSave = true; 
+
     }
     public void StopRecording()
     {
@@ -143,7 +148,7 @@ public class TrainingManager : MonoBehaviour
             dataGateway.PythonClient.StopTrainingMode(sampleType);
         }
         FillTrainingTypeDropDownSample();
-        subjectIDInput.text = null;
+        subjectIDInput.text = null; 
     }
 
     public void CreateNewModel()
@@ -159,5 +164,14 @@ public class TrainingManager : MonoBehaviour
             dataGateway.PythonClient.CreateNewModel(subjectIDsInput.text, trainingType, algorithm);
         }
         
+    }
+
+    public void Cancel()
+    {
+        FillTrainingTypeDropDownSample();
+        subjectIDInput.text = null;
+        recordingPanel.SetActive(false);
+        sampleSettingPanel.SetActive(true);
+        modelSettingPanel.SetActive(true);
     }
 }

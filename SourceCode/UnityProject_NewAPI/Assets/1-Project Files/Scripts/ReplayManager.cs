@@ -26,7 +26,7 @@ public class ReplayManager : MonoBehaviour
     public Sprite Play;
     public Sprite Pause;
 
-  
+
     void Start()
     {
         path = Application.dataPath + "/JsonAttempts/";
@@ -118,4 +118,9 @@ public class ReplayManager : MonoBehaviour
         else replayButton.image.sprite = Play;
     }
    
+    public void StopReplay()
+    {
+        isReplayPlaying = false;
+    }
+
 }

@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class State(Enum):
-    IDLE = 1
-    INIT = 2
-    RUNNING = 3
-    FINISHED = 4
+    IDLE = 0
+    INIT = 1
+    RUNNING = 2
+    FINISHED = 3

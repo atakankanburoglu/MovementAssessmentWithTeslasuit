@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ClassificationResult import ClassificationExercise, ClassificationType
+from training.ClassificationResult import ClassificationExercise, ClassificationType
 
 
 def filter_segments(data):

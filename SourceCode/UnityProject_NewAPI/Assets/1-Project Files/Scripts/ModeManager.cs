@@ -14,6 +14,9 @@ public class ModeManager : MonoBehaviour
     private GameObject replayUI;
     [SerializeField]
     private GameObject testingUI;
+    [SerializeField]
+    private GameObject cancelButton;
+
 
     void Start()
     {
@@ -36,25 +39,35 @@ public class ModeManager : MonoBehaviour
             replayUI.SetActive(false);
             testingUI.SetActive(true);
             trainingUI.SetActive(false);
+            cancelButton.SetActive(true);
         }
         else if (mode == ApplicationMode.Replay)
         {
             replayUI.SetActive(true);
             testingUI.SetActive(false);
             trainingUI.SetActive(false);
+            cancelButton.SetActive(true);
         }
         else if (mode == ApplicationMode.Training)
         {
             replayUI.SetActive(false);
             testingUI.SetActive(false);
             trainingUI.SetActive(true);
+            cancelButton.SetActive(true);
         }
         else
         {
-            replayUI.SetActive(false);
-            testingUI.SetActive(false);
-            trainingUI.SetActive(false);
+            CancelAllAction();
         }
+    }
+
+    public void CancelAllAction()
+    {
+        replayUI.SetActive(false);
+        testingUI.SetActive(false);
+        trainingUI.SetActive(false);
+        cancelButton.SetActive(false);
+        FillModeDropDown();
     }
 
 }

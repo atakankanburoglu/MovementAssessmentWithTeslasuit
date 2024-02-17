@@ -1,7 +1,7 @@
 import os
 from joblib import load
 import Config
-from ClassificationResult import ClassificationExercise, ClassificationType
+from training.ClassificationResult import ClassificationExercise, ClassificationType
 
 
 class PoseClassifier:

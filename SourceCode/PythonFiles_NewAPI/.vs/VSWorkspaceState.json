@@ -10,6 +10,6 @@
     "\\training\\old-data",
     "\\training\\positive-training-data"
   ],
-  "SelectedNode": "\\server\\Server.py",
+  "SelectedNode": "\\core\\DataGateway.py",
   "PreviewInSolutionExplorer": false
 }

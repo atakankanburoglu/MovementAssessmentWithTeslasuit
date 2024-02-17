@@ -49,9 +49,6 @@ public class TsHumanAnimator : MonoBehaviour
 
     private void SetupAvatarBones()
     {
-        //*
-        var imuData = m_motionProvider.GetImuData(Time.time);
-
         foreach (var reqBoneIndex in TsHumanBones.SuitBones)
         {
             var transformName = m_avatarSettings.GetTransformName(reqBoneIndex);
@@ -59,11 +56,6 @@ public class TsHumanAnimator : MonoBehaviour
             if (boneTransform != null && !m_bonesTransforms.ContainsKey(reqBoneIndex))
             {
                 m_bonesTransforms.Add(reqBoneIndex, boneTransform);
-            }
-            //*
-            if (imuData != null)
-            {
-                m_imuData.Add(reqBoneIndex, imuData.GetSensorData(reqBoneIndex));
             }
         }
     }
@@ -96,10 +88,14 @@ public class TsHumanAnimator : MonoBehaviour
                 boneTransform.rotation = targetRotation * poseRotation;
             });
             //*
-            TryDoWithSensorData(boneIndex, (tsImuSensorData) =>
+            if (m_imuData.ContainsKey(boneIndex))
             {
-                tsImuSensorData = imuData.GetSensorData(boneIndex);
-            });
+                m_imuData[boneIndex] = imuData.GetSensorData(boneIndex);
+            }
+            else
+            {
+                m_imuData.Add(boneIndex, imuData.GetSensorData(boneIndex));
+            }
         }
 
         TryDoWithBone(m_rootBone, (boneTransform) =>

@@ -9,7 +9,7 @@ public class Config
 
     public static ApplicationMode APPLICATION_MODE = ApplicationMode.Training;
 
-    public static TrainingType SELECTED_EXERCISE = TrainingType.Plank_Hold;
+    public static TrainingType SELECTED_EXERCISE = TrainingType.PLANKHOLD;
 
     /**
      * Relevant if recorded data is played back and recorded again.
@@ -20,7 +20,7 @@ public class Config
 
     public static List<String> propertyNames = new List<string>
         {
-            "quat9x", "quat6x", "gyroscope", "magnetometer",
+            "quat9x", "quat6x", "gyro", "magn",
             "accelerometer", "linearAccel"
         };
 

@@ -1,5 +1,5 @@
 import Config
-from ClassificationResult import ClassificationType, ClassificationExercise
+from training.ClassificationResult import ClassificationType, ClassificationExercise
 from core.DenoiseProxy import DenoiseProxy
 from data.DataAccess import DataAccess
 

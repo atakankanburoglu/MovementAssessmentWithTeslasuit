@@ -4,7 +4,7 @@ from joblib import dump
 from sklearn import svm, linear_model
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import confusion_matrix, plot_confusion_matrix, accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
 
 import Config
 from data.DataAccess import DataAccess

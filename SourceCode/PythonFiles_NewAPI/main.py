@@ -5,7 +5,7 @@ import time
 
 from joblib import load
 
-from ClassificationResult import ClassificationExercise
+#from ClassificationResult import ClassificationExercise
 from PerformanceAnalyzer import PerformanceAnalyzer
 from Plotter import Plotter
 from core.DataGateway import DataGateway
