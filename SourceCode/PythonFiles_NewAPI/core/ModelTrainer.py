@@ -5,7 +5,7 @@ from sklearn import svm, linear_model
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
-
+from sklearn.preprocessing import LabelEncoder
 import Config
 from data.DataAccess import DataAccess
 from data.DataManager import DataManager
@@ -37,20 +37,26 @@ class ModelTrainer:
 
     @staticmethod
     def train_feedback_model(training_data, algorithm, save_string):
-        X = training_data.x.tolist()
-        Y = training_data.y
-        if(algorithm == Algorithm.LR):
+        # delete timestamp for now (but not from training file)
+        training_data.drop('TrainingType', axis=1, inplace=True)
+
+        x = training_data.drop('Timestamp', axis=1).values
+        #x.columns = x.columns.astype(str)
+        y = training_data['Timestamp'].values
+        y = LabelEncoder().fit_transform(y)
+
+        if(algorithm == "LR"):
             lr = linear_model.LinearRegression()
-            lr.fit(X, Y)
+            lr.fit(x, y)
             print("Dumping LR Model Results")
             dump(lr, "../core/ml-models/" + save_string + "_lr_model")
-        if(algorithm == Algorithm.RF):
+        if(algorithm == "RF"):
             rf = RandomForestRegressor(max_depth=2, random_state=0)
-            rf.fit(X, Y)
+            rf.fit(x, y)
             print("Dumping RF Model Results")
             dump(rf, "../core/ml-models/" + save_string + "_rf_model")
-        if(algorithm == Algorithm.NN):
+        if(algorithm == "NN"):
             nn = MLPClassifier()
-            nn.fit(X, Y)
+            nn.fit(x, y)
             print("Dumping NN Model Results")
             dump(regr, "../core/ml-models/" + save_string + "_nn_model")

@@ -56,7 +56,7 @@ class Server:
             if(string_topic == "CreateModel"):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
-                self.dataGateway.on_create_feedback_model(data)
+                self.dataGateway.on_create_feedback_model(data[0])
                 self.applicationMode = ApplicationMode.MODELCREATION            
             if(string_topic == "TestingMode"):
                 stringPayload = str(payload, "utf-8")

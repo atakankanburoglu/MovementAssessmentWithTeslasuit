@@ -6,6 +6,7 @@ import os
 import Config
 from PerformanceAnalyzer import PerformanceAnalyzer
 from core.DataRecorder import DataRecorder
+from core.DataRetriever import DataRetriever
 from core.ModelTester import ModelTester
 from core.DenoiseProxy import DenoiseProxy
 from core.PoseClassifier import PoseClassifier
@@ -18,7 +19,7 @@ from enums.ApplicationMode import ApplicationMode
 class DataGateway:
     def __init__(self):
         self.streamSegmentor = StreamSegmentor()
-        #self.classifier = PoseClassifier()
+        self.dataRetriever = DataRetriever()
         #self.dataRecorder = DataRecorder()
         #self.denoiseProxy = DenoiseProxy()
         #self.repEvaluator = RepEvaluator()
@@ -83,13 +84,13 @@ class DataGateway:
         algorithm = data[2]
         training_data = pd.DataFrame()
         for ids in subject_ids:
-            training_data.append(self.dataRecorder.get_data_from_csv(ids, training_type, training_data.empty))
-        ModelTrainer.train_feedback_model(training_data, algorithm, subject_ids + training_type)
+            training_data = pd.concat([training_data, self.dataRetriever.get_data_from_csv(ids, training_type, training_data.empty)])
+        ModelTrainer.train_feedback_model(training_data, algorithm, str(subject_ids) + training_type)
         t = time.process_time()
 
     def on_get_model_list():
         thisdir = os.getcwd()
-        files = [f for f in os.listdir(thisdir + "core/ml-models/")]
+        files = [f for f in os.listdir(thisdir + "/core/ml-models/")]
         return files
 
     def on_testing_init(self, init):
