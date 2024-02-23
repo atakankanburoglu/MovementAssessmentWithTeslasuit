@@ -10,7 +10,7 @@ public class TestingManager : MonoBehaviour
 {
     //Model Setting Panel
     [SerializeField]
-    private Dropdown modelDropDown;
+    private Dropdown algorithmDropDown;
     [SerializeField]
     private Toggle newRecognitionModelToggle;
     [SerializeField]
@@ -36,11 +36,9 @@ public class TestingManager : MonoBehaviour
     public TsHumanAnimator tsHumanAnimator;
 
     private TrainingType trainingType;
-
-    List<string> models = new List<string>();
     void Start()
     {
-        
+        FillAlgorithmDropDownModel();
     }
 
     void Update()
@@ -50,10 +48,6 @@ public class TestingManager : MonoBehaviour
             ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
             dataGateway.PythonClient.PushSuitData(imuDataObject);
         }
-        if(models.Count != 0)
-        {
-            FillModelDropDownModel();
-        }
     }
 
     public void FillRecognizedExcerciseOutputInput(TrainingType trainingType)
@@ -62,26 +56,18 @@ public class TestingManager : MonoBehaviour
         recognizedExerciseOutput.text = Enum.GetName(typeof(TrainingType), trainingType);
     }
 
-    public void GetModelsForDropdown()
+
+    void FillAlgorithmDropDownModel()
     {
-        dataGateway.PythonClient.GetModels();
+        string[] algorithms = Enum.GetNames(typeof(Algorithm));
+        algorithmDropDown.ClearOptions();
+        algorithmDropDown.AddOptions(new List<string>(algorithms));
     }
 
-    public void SetModelsForDropdown(string[] models)
+    public void ChooseAlgorithm()
     {
-        this.models = new List<string>(models);
-    }
-
-    void FillModelDropDownModel()
-    {
-        modelDropDown.ClearOptions();
-        modelDropDown.AddOptions(models);
-    }
-
-    public void ChooseModel()
-    {
-        String model = modelDropDown.options[modelDropDown.value].text;
-        dataGateway.PythonClient.StartTestingMode(model, true);
+        String algorithm = algorithmDropDown.options[algorithmDropDown.value].text;
+        dataGateway.PythonClient.StartTestingMode(algorithm, true);
     }
 
     public void StartFeedback()
@@ -100,7 +86,7 @@ public class TestingManager : MonoBehaviour
 
     public void Cancel()
     {
-        FillModelDropDownModel();
+        FillAlgorithmDropDownModel();
         feedbackPanel.SetActive(false);
         modelSettingPanel.SetActive(true);
         recognizedExerciseOutput.gameObject.SetActive(false);

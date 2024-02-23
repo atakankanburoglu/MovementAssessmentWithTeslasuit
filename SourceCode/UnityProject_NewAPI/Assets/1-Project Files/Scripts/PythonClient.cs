@@ -32,7 +32,6 @@ public class PythonClient
 
     //for Feedback
     private State testingMode = State.IDLE;
-    private bool getModels = false;
     private string modelInfoForTesting;
 
     //private MotionFeedback _motionFeedback;
@@ -96,15 +95,8 @@ public class PythonClient
                 }
                 if (testingMode == State.INIT)
                 {
-                    if (getModels)
-                    {
-                        publisher.SendFrame("TestingMode " + testingMode);
-
-                    } else
-                    {
-                        publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
-                        testingMode = State.RUNNING;
-                    }
+                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
+                    testingMode = State.RUNNING;
                 
                 }
                 if (testingMode == State.FINISHED)
@@ -139,11 +131,6 @@ public class PythonClient
                 {
 
                     _dataGateway.OnExcerciseRecognized(message);
-                } else
-                if (topic == "TestingMode")
-                {
-                    getModels = false;
-                    _dataGateway.OnModelListReceived(message);
                 }
                 //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
 
@@ -201,12 +188,6 @@ public class PythonClient
     {
         createModel = true;
         modelInfo = subjectIds + "_" + trainingType + "_" + algorithm;
-    }
-
-    public void GetModels()
-    {
-        testingMode = State.INIT;
-        getModels = true;
     }
 
     public void StartTestingMode(String algorithm, Boolean newRecognitionModel)

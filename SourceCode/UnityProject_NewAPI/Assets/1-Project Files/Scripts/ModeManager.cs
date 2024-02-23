@@ -40,7 +40,6 @@ public class ModeManager : MonoBehaviour
             testingUI.SetActive(true);
             trainingUI.SetActive(false);
             cancelButton.SetActive(true);
-            testingManager.GetModelsForDropdown();
         }
         else if (mode == ApplicationMode.Replay)
         {

@@ -5865,7 +5865,7 @@ GameObject:
   - component: {fileID: 671135892}
   - component: {fileID: 671135891}
   m_Layer: 5
-  m_Name: Model Dropdown
+  m_Name: Algorithm Dropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7394,7 +7394,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1281827034}
         m_TargetAssemblyTypeName: TestingManager, Assembly-CSharp
-        m_MethodName: ChooseModel
+        m_MethodName: ChooseAlgorithm
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -11158,7 +11158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c72b50915f245d4981faa6782fb6254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  modelDropDown: {fileID: 671135891}
+  algorithmDropDown: {fileID: 671135891}
   newRecognitionModelToggle: {fileID: 135234195}
   modelSettingPanel: {fileID: 573614775}
   recognizedExerciseOutput: {fileID: 2007517514}
@@ -12102,7 +12102,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1451300190
 RectTransform:
   m_ObjectHideFlags: 0

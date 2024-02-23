@@ -86,11 +86,6 @@ class DataGateway:
         ModelTrainer.train_feedback_model(training_data, algorithm, init)
         t = time.process_time()
 
-    def on_get_model_list(self):
-        thisdir = os.getcwd()
-        files = [f for f in os.listdir(thisdir + "/core/ml_models/")]
-        return files
-
     def on_testing_init(self, init):
         data = init.split("_")
         #TODO: is it "true" or "1" or 1?
@@ -100,7 +95,7 @@ class DataGateway:
         t = time.process_time()
 
     def on_create_exercise_recognition_model(self):
-        training_data = self.dataRecorder.get_data_from_csv_for_exercise_recognition()
+        training_data = self.dataRetriever.get_data_from_csv_for_exercise_recognition()
         ModelTrainer.train_exercise_recognition_model(training_data)
 
 

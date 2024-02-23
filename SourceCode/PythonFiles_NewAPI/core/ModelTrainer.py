@@ -31,7 +31,7 @@ class ModelTrainer:
         X = training_data.drop(['TrainingType'], axis=1) 
         y = training_data['TrainingType']
 
-        print("Building SVM Model with ", len(Y), " data points.")
+        #print("Building SVM Model with ", len(y), " data points.")
         supportVectorMachine = svm.SVC()
         supportVectorMachine.fit(X, y)
         

@@ -25,12 +25,6 @@ public class DataGateway : MonoBehaviour
         testingManager.FillRecognizedExcerciseOutputInput(trainingType);
     }
 
-    public void OnModelListReceived(string modelList)
-    {
-        var models = modelList.Split(',');
-        testingManager.SetModelsForDropdown(models);
-    }
-
     // Update is called once per frame
     void Update()
     {
