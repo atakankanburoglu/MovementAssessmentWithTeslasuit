@@ -27,7 +27,8 @@ public class DataGateway : MonoBehaviour
 
     public void OnModelListReceived(string modelList)
     {
-        testingManager.SetModelsForDropdown(new List<string>(modelList.Split(',')));
+        var models = modelList.Split(',');
+        testingManager.SetModelsForDropdown(models);
     }
 
     // Update is called once per frame

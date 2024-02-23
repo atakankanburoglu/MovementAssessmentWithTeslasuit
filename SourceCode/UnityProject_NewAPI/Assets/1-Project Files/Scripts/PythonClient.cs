@@ -142,6 +142,7 @@ public class PythonClient
                 } else
                 if (topic == "TestingMode")
                 {
+                    getModels = false;
                     _dataGateway.OnModelListReceived(message);
                 }
                 //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));

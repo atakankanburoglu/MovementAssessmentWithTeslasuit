@@ -50,6 +50,10 @@ public class TestingManager : MonoBehaviour
             ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
             dataGateway.PythonClient.PushSuitData(imuDataObject);
         }
+        if(models.Count != 0)
+        {
+            FillModelDropDownModel();
+        }
     }
 
     public void FillRecognizedExcerciseOutputInput(TrainingType trainingType)
@@ -63,10 +67,9 @@ public class TestingManager : MonoBehaviour
         dataGateway.PythonClient.GetModels();
     }
 
-    public void SetModelsForDropdown(List<string> models)
+    public void SetModelsForDropdown(string[] models)
     {
-        this.models = models;
-        FillModelDropDownModel();
+        this.models = new List<string>(models);
     }
 
     void FillModelDropDownModel()

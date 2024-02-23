@@ -64,10 +64,10 @@ class Server:
                 if(data[0] == "INIT"):
                     self.thread2 = threading.Thread(target=self.send_thread)
                     self.thread2.start()
-                    if(data.count == 1):
+                    if(len(data) == 1):
                         model_files = self.dataGateway.on_get_model_list()
-                        self.pushResult("TestingMode " + model_files)
-                    else:
+                        self.pushResult("TestingMode " + ','.join(model_files))
+                    if(len(data) > 1):
                         self.dataGateway.on_testing_init(data[1])
                         self.applicationMode = ApplicationMode.TESTING   
                 if(data[0] == "FINISHED"):

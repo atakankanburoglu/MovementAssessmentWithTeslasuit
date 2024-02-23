@@ -82,21 +82,19 @@ class DataGateway:
         subject_ids = data[0].split(",");
         training_type = data[1]
         algorithm = data[2]
-        training_data = pd.DataFrame()
-        for ids in subject_ids:
-            training_data = pd.concat([training_data, self.dataRetriever.get_data_from_csv(ids, training_type, training_data.empty)])
-        ModelTrainer.train_feedback_model(training_data, algorithm, str(subject_ids) + training_type)
+        training_data = self.dataRetriever.get_data_from_csv_for_feedback_model(subject_ids, training_type)
+        ModelTrainer.train_feedback_model(training_data, algorithm, init)
         t = time.process_time()
 
-    def on_get_model_list():
+    def on_get_model_list(self):
         thisdir = os.getcwd()
-        files = [f for f in os.listdir(thisdir + "/core/ml-models/")]
+        files = [f for f in os.listdir(thisdir + "/core/ml_models/")]
         return files
 
     def on_testing_init(self, init):
         data = init.split("_")
         #TODO: is it "true" or "1" or 1?
-        if data[1] == "true":
+        if data[1] == "True":
             self.on_create_exercise_recognition_model()
         self.modelTester = ModelTester(data[0])
         t = time.process_time()

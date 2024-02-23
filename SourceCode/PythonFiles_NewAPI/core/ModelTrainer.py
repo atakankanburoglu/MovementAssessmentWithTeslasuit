@@ -1,9 +1,10 @@
 import pandas as pd
+import time
 from sklearn import svm
 from joblib import dump
 from sklearn import svm, linear_model
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
 from sklearn.preprocessing import LabelEncoder
 import Config
@@ -15,6 +16,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import cross_val_score, LeaveOneGroupOut
 import seaborn as sns
 from enums.Algorithm import Algorithm
+import os
 
 pd.set_option('mode.chained_assignment', None)
 
@@ -23,40 +25,44 @@ class ModelTrainer:
     @staticmethod
     def train_exercise_recognition_model(training_data):
         print("Creating Excercise Recognition Model...")
-        #TODO: how should this look?
-        X = training_data.x.tolist()
-        Y = training_data.y
+        
+        training_data.drop(['Timestamp'], axis=1, inplace=True)
+
+        X = training_data.drop(['TrainingType'], axis=1) 
+        y = training_data['TrainingType']
 
         print("Building SVM Model with ", len(Y), " data points.")
         supportVectorMachine = svm.SVC()
-        supportVectorMachine.fit(X, Y)
+        supportVectorMachine.fit(X, y)
         
-        t = time.time()
+        
+        thisdir = os.getcwd()
         print("Dumping Excercise Recognition Model Results")
-        dump(supportVectorMachine, "../core/ml-models/svm_model" + str(int(t)))
+        dump(supportVectorMachine, thisdir + "/core/ml_models/exercise_recognition_svm_model")
 
     @staticmethod
     def train_feedback_model(training_data, algorithm, save_string):
-        # delete timestamp for now (but not from training file)
-        training_data.drop('TrainingType', axis=1, inplace=True)
+        thisdir = os.getcwd()
+        t = time.time()
 
-        x = training_data.drop('Timestamp', axis=1).values
-        #x.columns = x.columns.astype(str)
-        y = training_data['Timestamp'].values
-        y = LabelEncoder().fit_transform(y)
+        # delete TrainingType 
+        training_data.drop(['TrainingType'], axis=1, inplace=True)
+
+        X = training_data.drop(['Timestamp'], axis=1) 
+        y = training_data['Timestamp']
 
         if(algorithm == "LR"):
             lr = linear_model.LinearRegression()
-            lr.fit(x, y)
+            lr.fit(X, y)
             print("Dumping LR Model Results")
-            dump(lr, "../core/ml-models/" + save_string + "_lr_model")
+            dump(lr, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
         if(algorithm == "RF"):
             rf = RandomForestRegressor(max_depth=2, random_state=0)
-            rf.fit(x, y)
+            rf.fit(X, y)
             print("Dumping RF Model Results")
-            dump(rf, "../core/ml-models/" + save_string + "_rf_model")
+            dump(rf, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
         if(algorithm == "NN"):
-            nn = MLPClassifier()
-            nn.fit(x, y)
+            nn = MLPRegressor()
+            nn.fit(X, y)
             print("Dumping NN Model Results")
-            dump(regr, "../core/ml-models/" + save_string + "_nn_model")
+            dump(nn, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
