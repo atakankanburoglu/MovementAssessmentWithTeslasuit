@@ -32,13 +32,13 @@ class ModelTrainer:
         y = training_data['TrainingType']
 
         #print("Building SVM Model with ", len(y), " data points.")
-        supportVectorMachine = svm.SVC()
-        supportVectorMachine.fit(X, y)
+        svc = svm.SVC()
+        svc.fit(X, y)
         
         
         thisdir = os.getcwd()
         print("Dumping Excercise Recognition Model Results")
-        dump(supportVectorMachine, thisdir + "/core/ml_models/exercise_recognition_svm_model")
+        dump(svc, thisdir + "/core/ml_models/exercise_recognition_svm_model")
 
     @staticmethod
     def train_feedback_model(training_data, algorithm, save_string):

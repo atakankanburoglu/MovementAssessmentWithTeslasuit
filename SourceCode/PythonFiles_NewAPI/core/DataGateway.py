@@ -19,8 +19,6 @@ from enums.ApplicationMode import ApplicationMode
 class DataGateway:
     def __init__(self):
         self.streamSegmentor = StreamSegmentor()
-        self.dataRetriever = DataRetriever()
-        #self.dataRecorder = DataRecorder()
         #self.denoiseProxy = DenoiseProxy()
         #self.repEvaluator = RepEvaluator()
 
@@ -37,12 +35,12 @@ class DataGateway:
             self.dataRecorder.log_data(suitData)
         if application_mode == ApplicationMode.TESTING:
            #Send to ModelTester
-           exerciseRecognition = ModelTester.train_exercise_recognition_model(suitData)
-           if exerciseRecognition != "":
-               error = ModelTester.get_feedback_from_model(exerciseRecognition)
-               return exerciseRecognition + "_" + error
+           exercise_recognition = ModelTester.get_exercise_recognition(suit_data)
+           if exercise_recognition != None:
+               error = ModelTester.get_feedback_from_model(exercise_recognition, suit_data)
+               return exercise_recognition + "_" + error
            else: 
-            return exerciseRecognition
+            return exercise_recognition
        
         
         ##denoisedData = self.denoiseProxy.denoise(DataAccess.get_data_without_timesamp(suitData))
@@ -82,22 +80,23 @@ class DataGateway:
         subject_ids = data[0].split(",");
         training_type = data[1]
         algorithm = data[2]
-        training_data = self.dataRetriever.get_data_from_csv_for_feedback_model(subject_ids, training_type)
+        training_data = DataRetriever.get_data_from_csv_for_feedback_model(subject_ids, training_type)
         ModelTrainer.train_feedback_model(training_data, algorithm, init)
         t = time.process_time()
+
+    def on_get_exercise_list(self):
+        thisdir = os.getcwd()
+        files = [f for f in os.listdir(thisdir + "/core/samples/")]
+        return files
 
     def on_testing_init(self, init):
         data = init.split("_")
         #TODO: is it "true" or "1" or 1?
         if data[1] == "True":
-            self.on_create_exercise_recognition_model()
+            training_data = DataRetriever.get_data_from_csv_for_exercise_recognition()
+            ModelTrainer.train_exercise_recognition_model(training_data)
         self.modelTester = ModelTester(data[0])
         t = time.process_time()
-
-    def on_create_exercise_recognition_model(self):
-        training_data = self.dataRetriever.get_data_from_csv_for_exercise_recognition()
-        ModelTrainer.train_exercise_recognition_model(training_data)
-
 
     def get_recorded_data(self):
         return self.dataRecorder.dataToDataframe()

@@ -6,6 +6,7 @@ import glob
 
 class DataRetriever:
 
+    @staticmethod
     def get_data_from_csv_for_feedback_model(self, subject_ids, training_type):
         training_data = pd.DataFrame()
         thisdir = os.getcwd()
@@ -29,6 +30,7 @@ class DataRetriever:
                             training_data = pd.concat((df, training_data), axis=0)
         return training_data
 
+    @staticmethod
     def get_data_from_csv_for_exercise_recognition(self):
         thisdir = os.getcwd()
         files = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv")]

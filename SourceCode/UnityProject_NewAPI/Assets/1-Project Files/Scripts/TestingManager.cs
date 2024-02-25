@@ -8,16 +8,28 @@ using System;
 
 public class TestingManager : MonoBehaviour
 {
-    //Model Setting Panel
+    //Real Time Testing Setting Panel
+    [SerializeField]
+    private TMP_InputField subjectIDsInput;
     [SerializeField]
     private Dropdown algorithmDropDown;
     [SerializeField]
-    private Toggle newRecognitionModelToggle;
+    private Toggle newRecognitionModelRealTimeToggle;
     [SerializeField]
-    private GameObject modelSettingPanel;
+    private GameObject realTimeSettingPanel;
+
+    //Recorded Testing Setting Panel
+    [SerializeField]
+    private Dropdown recordedExercisesDropDown;
+    [SerializeField]
+    private Toggle newRecognitionModelRecordedToggle;
+    [SerializeField]
+    private GameObject recordedSettingPanel;
 
     [SerializeField]
     private TMP_InputField recognizedExerciseOutput;
+    [SerializeField]
+    private GameObject recognizedExercisePanel;
 
     //Recording Panel
     [SerializeField]
@@ -36,9 +48,13 @@ public class TestingManager : MonoBehaviour
     public TsHumanAnimator tsHumanAnimator;
 
     private TrainingType trainingType;
+
+    List<string> recordedExercisesList = new List<string>();
+
     void Start()
     {
         FillAlgorithmDropDownModel();
+        GetRecordedExercisesForDropdown();
     }
 
     void Update()
@@ -47,6 +63,10 @@ public class TestingManager : MonoBehaviour
         {
             ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
             dataGateway.PythonClient.PushSuitData(imuDataObject);
+        }
+        if (recordedExercisesList.Count != 0)
+        {
+            FillRecordedExercisesDropDownModel();
         }
     }
 
@@ -69,6 +89,27 @@ public class TestingManager : MonoBehaviour
         String algorithm = algorithmDropDown.options[algorithmDropDown.value].text;
         dataGateway.PythonClient.StartTestingMode(algorithm, true);
     }
+    void FillRecordedExercisesDropDownModel()
+    {
+        recordedExercisesDropDown.ClearOptions();
+        recordedExercisesDropDown.AddOptions(recordedExercisesList);
+    }
+
+    public void GetRecordedExercisesForDropdown()
+    {
+        dataGateway.PythonClient.GetRecordedExercises();
+    }
+
+    public void SetRecordedExercisesForDropdown(string[] recordedExercises)
+    {
+        this.recordedExercisesList = new List<string>(recordedExercises);
+    }
+
+    public void ChooseRecordedExercise()
+    {
+        String exercise = recordedExercisesDropDown.options[recordedExercisesDropDown.value].text;
+        dataGateway.PythonClient.StartTestingMode(exercise, true);
+    }
 
     public void StartFeedback()
     {
@@ -88,7 +129,8 @@ public class TestingManager : MonoBehaviour
     {
         FillAlgorithmDropDownModel();
         feedbackPanel.SetActive(false);
-        modelSettingPanel.SetActive(true);
-        recognizedExerciseOutput.gameObject.SetActive(false);
+        realTimeSettingPanel.SetActive(true);
+        recordedSettingPanel.SetActive(true);
+        recognizedExercisePanel.SetActive(false);
     }
 }

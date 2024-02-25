@@ -62,10 +62,15 @@ class Server:
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
                 if(data[0] == "INIT"):
-                    self.thread2 = threading.Thread(target=self.send_thread)
-                    self.thread2.start()
-                    self.dataGateway.on_testing_init(data[1])
-                    self.applicationMode = ApplicationMode.TESTING   
+                    if(self.thread2 == None):
+                        self.thread2 = threading.Thread(target=self.send_thread)
+                        self.thread2.start()
+                    if(len(data) == 1):
+                        exercise_files = self.dataGateway.on_get_exercise_list()
+                        self.pushResult("TestingMode " + ','.join(exercise_files))
+                    if(len(data) > 1):
+                        self.dataGateway.on_testing_init(data[1])
+                        self.applicationMode = ApplicationMode.TESTING    
                 if(data[0] == "FINISHED"):
                     self.thread2.stop();
                     self.applicationMode = ApplicationMode.IDLE  

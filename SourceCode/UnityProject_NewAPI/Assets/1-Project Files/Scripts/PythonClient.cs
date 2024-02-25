@@ -28,6 +28,7 @@ public class PythonClient
 
     //for Model Creation
     private Boolean createModel = false;
+    private bool getRecordedExercises = false;
     private string modelInfo;
 
     //for Feedback
@@ -95,9 +96,17 @@ public class PythonClient
                 }
                 if (testingMode == State.INIT)
                 {
-                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
-                    testingMode = State.RUNNING;
-                
+                    if (getRecordedExercises)
+                    {
+                        publisher.SendFrame("TestingMode " + testingMode);
+
+                    }
+                    else
+                    {
+                        publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
+                        testingMode = State.RUNNING;
+                    }
+
                 }
                 if (testingMode == State.FINISHED)
                 {
@@ -131,6 +140,11 @@ public class PythonClient
                 {
 
                     _dataGateway.OnExcerciseRecognized(message);
+                }
+                if (topic == "TestingMode")
+                {
+                    getRecordedExercises = false;
+                    _dataGateway.OnRecordedExercisesListReceived(message);
                 }
                 //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
 
@@ -182,6 +196,12 @@ public class PythonClient
     {
         trainingMode = State.FINISHED;
         this.sampleType = sampleType;
+    }
+
+    public void GetRecordedExercises()
+    {
+        testingMode = State.INIT;
+        getRecordedExercises = true;
     }
 
     public void CreateNewModel(String subjectIds, TrainingType trainingType, Algorithm algorithm)

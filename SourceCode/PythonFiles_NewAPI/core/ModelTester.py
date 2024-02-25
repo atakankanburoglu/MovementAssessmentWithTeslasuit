@@ -16,41 +16,36 @@ from sklearn.model_selection import cross_val_score, LeaveOneGroupOut
 import seaborn as sns
 from enums.Algorithm import Algorithm
 
+import os
+
 pd.set_option('mode.chained_assignment', None)
 
 class ModelTester:
 
-    @staticmethod
-    def train_exercise_recognition_model(training_data):
-        print("Creating Excercise Recognition Model...")
+    def __init__(self, subject_ids, algorithm):
+        self.subject_ids = subject_ids
+        self.algorithm = algorithm
+    
+    def get_exercise_recognition(suit_data):
+        thisdir = os.getcwd()
+        svc = load(thisdir + "/core/ml_models/exercise_recognition_svm_model")
+        exercise_recognition = svc.predict(suit_data)
+        if exercise_recognition != "":
+            return exercise_recognition
 
-        X = training_data.drop(["label"], axis=1)
-        Y = strippedData["label"]
 
-        print("Building SVM Model with ", len(Y), " data points.")
-        supportVectorMachine = svm.SVC()
-        supportVectorMachine.fit(X, Y)
-
-        print("Dumping Excercise Recognition Model Results")
-        dump(supportVectorMachine, "../core/ml-models/svm_model")
-
-    @staticmethod
-    def train_feedback_model(training_data, subject_ids, training_type, algorithm):
-        save_string = subject_ids + training_type
-        X = training_data.drop(["label"], axis=1)
-        Y = training_data["label"]
-        if(algorithm == Algorithm.LR):
-            lr = linear_model.LinearRegression()
-            lr.fit(X, Y)
-            print("Dumping LR Model Results")
-            dump(lr, "../core/ml-models/" + save_string + "_lr_model")
-        if(algorithm == Algorithm.RF):
-            rf = RandomForestRegressor(max_depth=2, random_state=0)
-            rf.fit(X, Y)
-            print("Dumping RF Model Results")
-            dump(rf, "../core/ml-models/" + save_string + "_rf_model")
-        if(algorithm == Algorithm.NN):
-            nn = MLPClassifier()
-            nn.fit(X, Y)
-            print("Dumping NN Model Results")
-            dump(regr, "../core/ml-models/" + save_string + "_nn_model")
+    def get_feedback_from_model(exercise_recognition, suit_data):
+        thisdir = os.getcwd()
+        files = [f for f in os.listdir(thisdir + "/core/ml_models/")]
+        newest_model_time = 0
+        newest_model_path = ""
+        for f in files:
+            filename = f.split("_")
+            if(file_name[0] == self.subject_ids and file_name[1] == exercise_recognition and file_name[2] == self.algorithm):
+                if newest_model_time < int(file_name[3]):
+                    newest_model_time = int(file_name[3])
+                    newest_model_path = f
+        model = load(newest_model_path)
+        error = model.predict(suit_data)
+        if error != "":
+            return error
