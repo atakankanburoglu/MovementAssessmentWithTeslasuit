@@ -7,7 +7,7 @@ import glob
 class DataRetriever:
 
     @staticmethod
-    def get_data_from_csv_for_feedback_model(self, subject_ids, training_type):
+    def get_data_from_csv_for_feedback_model(subject_ids, training_type):
         training_data = pd.DataFrame()
         thisdir = os.getcwd()
         files = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv")]
@@ -19,7 +19,7 @@ class DataRetriever:
                 for id in range(start, end):
                     for f in files:
                         file_name = f.split("_")
-                        if(file_name[0] == id and file_name[1] == training_type and file_name[2] == "Positive"):
+                        if(file_name[0] == str(id) and file_name[1] == training_type and file_name[2] == "Positive"):
                             df = pd.read_csv(thisdir + "/core/samples/" + f)
                             training_data = pd.concat((df, training_data), axis=0)
             else:
@@ -31,7 +31,7 @@ class DataRetriever:
         return training_data
 
     @staticmethod
-    def get_data_from_csv_for_exercise_recognition(self):
+    def get_data_from_csv_for_exercise_recognition():
         thisdir = os.getcwd()
         files = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv")]
         training_data = pd.DataFrame()

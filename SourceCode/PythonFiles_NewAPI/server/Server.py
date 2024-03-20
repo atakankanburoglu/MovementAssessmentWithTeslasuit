@@ -39,11 +39,10 @@ class Server:
             if(string_topic == "ImuDataStream" and (self.applicationMode == ApplicationMode.TRAINING or self.applicationMode == ApplicationMode.TESTING)):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
-                try:
-                    row = np.array(data)
-                    self.dataGateway.on_imu_data_stream(row, self.applicationMode)
-                except:
-                    print("Count not process ImuDataStream: ", data)
+                row = np.array(data)
+                self.dataGateway.on_imu_data_stream(row, self.applicationMode)
+                #except:
+                    #print("Count not process ImuDataStream: ", data)
             if(string_topic == "TrainingMode"):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
@@ -69,7 +68,7 @@ class Server:
                         exercise_files = self.dataGateway.on_get_exercise_list()
                         self.pushResult("TestingMode " + ','.join(exercise_files))
                     if(len(data) > 1):
-                        self.dataGateway.on_testing_init(data[1])
+                        self.dataGateway.on_testing_init(data[1], data[2])
                         self.applicationMode = ApplicationMode.TESTING    
                 if(data[0] == "FINISHED"):
                     self.thread2.stop();

@@ -44,12 +44,18 @@ public class TestingManager : MonoBehaviour
     public DataGateway dataGateway;
 
     private Boolean running;
+    private float timeInterval = 10.0f;
 
     public TsHumanAnimator tsHumanAnimator;
 
     private TrainingType trainingType;
 
     List<string> recordedExercisesList = new List<string>();
+
+    [SerializeField]
+    private Text startCountdown;
+    [SerializeField]
+    private Text timerCountdown;
 
     void Start()
     {
@@ -59,14 +65,24 @@ public class TestingManager : MonoBehaviour
 
     void Update()
     {
-        if (running)
-        {
-            ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
-            dataGateway.PythonClient.PushSuitData(imuDataObject);
+        if (startCountdown.text == "0") {
+            timeInterval -= Time.deltaTime;
+            if (running)
+            {
+                timerCountdown.gameObject.SetActive(true);
+                timerCountdown.text = (timeInterval).ToString("0");
+
+                ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, timeInterval);
+                dataGateway.PythonClient.PushSuitData(imuDataObject);
+            }
         }
         if (recordedExercisesList.Count != 0)
         {
             FillRecordedExercisesDropDownModel();
+        }
+        if (timeInterval < 0)
+        {
+            timeInterval = 10.0f;
         }
     }
 
@@ -87,7 +103,7 @@ public class TestingManager : MonoBehaviour
     public void ChooseAlgorithm()
     {
         String algorithm = algorithmDropDown.options[algorithmDropDown.value].text;
-        dataGateway.PythonClient.StartTestingMode(algorithm, true);
+        dataGateway.PythonClient.StartTestingMode(subjectIDsInput.text, algorithm, newRecognitionModelRealTimeToggle.isOn);
     }
     void FillRecordedExercisesDropDownModel()
     {
@@ -108,12 +124,13 @@ public class TestingManager : MonoBehaviour
     public void ChooseRecordedExercise()
     {
         String exercise = recordedExercisesDropDown.options[recordedExercisesDropDown.value].text;
-        dataGateway.PythonClient.StartTestingMode(exercise, true);
+        //dataGateway.PythonClient.StartTestingMode(exercise, true);
     }
 
     public void StartFeedback()
     {
         running = true;
+        timeInterval = 10.0f;
     }
     public void PauseFeedback()
     {
@@ -123,6 +140,9 @@ public class TestingManager : MonoBehaviour
     {
         dataGateway.PythonClient.StopTestingMode();
         running = false;
+
+        timerCountdown.gameObject.SetActive(false);
+        timeInterval = 10.0f;
     }
 
     public void Cancel()
@@ -132,5 +152,8 @@ public class TestingManager : MonoBehaviour
         realTimeSettingPanel.SetActive(true);
         recordedSettingPanel.SetActive(true);
         recognizedExercisePanel.SetActive(false);
+        timerCountdown.gameObject.SetActive(false);
+        timeInterval = 10.0f;
+        running = false;
     }
 }

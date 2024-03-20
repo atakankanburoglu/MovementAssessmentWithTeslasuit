@@ -43,13 +43,18 @@ public class TrainingManager : MonoBehaviour
 
     private DataGateway dataGateway;
 
-    float timer;
     private bool shouldSave;
-    private float timeInterval = 0.5f;
+    private float timeInterval = 10.0f;
 
 
     private ReplayObject infoToJSon;
     string path;
+
+    [SerializeField]
+    private Text startCountdown;
+    [SerializeField]
+    private Text timerCountdown;
+
 
     void Start()
     {
@@ -63,27 +68,37 @@ public class TrainingManager : MonoBehaviour
 
     void Update()
     {
-        timer += Time.deltaTime;
-        if (shouldSave && timer > timeInterval)
+        if (startCountdown.text == "0")
         {
-            //Do this for Replay
-            ReplayInfo rp = new ReplayInfo();
-            foreach (KeyValuePair<TsHumanBoneIndex, Transform> kvp in tsHumanAnimator.BoneTransforms)
+            timeInterval -= Time.deltaTime;
+            if (shouldSave)
             {
-                rp.replayPosition.Add(kvp.Key, kvp.Value.position);
-                rp.replayRotation.Add(kvp.Key, kvp.Value.rotation.eulerAngles);
-                rp.replayRotationQuaternion.Add(kvp.Key, MyQuaternion.ConverToMyQuat(kvp.Value.rotation));
-            }
+                timerCountdown.gameObject.SetActive(true);
+                timerCountdown.text = (timeInterval).ToString("0");
 
-            infoToJSon.replayInfo.Add(rp);
+                //Do this for Replay
+                ReplayInfo rp = new ReplayInfo();
+                foreach (KeyValuePair<TsHumanBoneIndex, Transform> kvp in tsHumanAnimator.BoneTransforms)
+                {
+                    rp.replayPosition.Add(kvp.Key, kvp.Value.position);
+                    rp.replayRotation.Add(kvp.Key, kvp.Value.rotation.eulerAngles);
+                    rp.replayRotationQuaternion.Add(kvp.Key, MyQuaternion.ConverToMyQuat(kvp.Value.rotation));
+                }
 
-            if (tsHumanAnimator.ImuData.Count > 0)
-            {
-                //Do this for Model Training
-                TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
-                ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, Time.time);
-                dataGateway.PythonClient.PushSuitData(imuDataObject);
+                infoToJSon.replayInfo.Add(rp);
+
+                if (tsHumanAnimator.ImuData.Count > 0)
+                {
+                    //Do this for Model Training
+                    TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
+                    ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, timeInterval);
+                    dataGateway.PythonClient.PushSuitData(imuDataObject);
+                }
             }
+        }
+        if(timeInterval < 0)
+        {
+            timeInterval = 10.0f;
         }
     }
 
@@ -126,8 +141,8 @@ public class TrainingManager : MonoBehaviour
     public void StartRecording()
     {
         if (infoToJSon == null) return;
-        shouldSave = true; 
-
+        shouldSave = true;
+        timeInterval = 10.0f;
     }
     public void StopRecording()
     {
@@ -135,6 +150,8 @@ public class TrainingManager : MonoBehaviour
     }
     public void SaveRecording()
     {
+        timerCountdown.gameObject.SetActive(false);
+        timeInterval = 10.0f;
         if (!shouldSave)
         {
             Debug.Log("json");
@@ -173,5 +190,8 @@ public class TrainingManager : MonoBehaviour
         recordingPanel.SetActive(false);
         sampleSettingPanel.SetActive(true);
         modelSettingPanel.SetActive(true);
+        timerCountdown.gameObject.SetActive(false);
+        timeInterval = 10.0f;
+        shouldSave = false;
     }
 }

@@ -27,10 +27,11 @@ class ModelTrainer:
         print("Creating Excercise Recognition Model...")
         
         training_data.drop(['Timestamp'], axis=1, inplace=True)
+        
+        y = training_data['TrainingType'].values
+        X = training_data.drop(['TrainingType'], axis=1)
 
-        X = training_data.drop(['TrainingType'], axis=1) 
-        y = training_data['TrainingType']
-
+        X.fillna("0", inplace=True, axis=1)
         #print("Building SVM Model with ", len(y), " data points.")
         svc = svm.SVC()
         svc.fit(X, y)
@@ -47,9 +48,11 @@ class ModelTrainer:
 
         # delete TrainingType 
         training_data.drop(['TrainingType'], axis=1, inplace=True)
-
-        X = training_data.drop(['Timestamp'], axis=1) 
+        
         y = training_data['Timestamp']
+        X = training_data.drop(['Timestamp'], axis=1) 
+
+        X.fillna("0", inplace=True, axis=1)
 
         if(algorithm == "LR"):
             lr = linear_model.LinearRegression()

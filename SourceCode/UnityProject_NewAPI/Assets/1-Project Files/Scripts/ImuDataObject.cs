@@ -43,7 +43,7 @@ public class ImuDataObject
             }
 
         }
-
+        sb.Remove(sb.Length - 1, 1); //remove last seperator
         return sb.ToString();
     }
 
@@ -92,8 +92,7 @@ public class ImuDataObject
                 sb.Append(nodeName + "_" + property + "_z").Append(seperator);
             }
         }
-
-        sb.Append("\n");
+        sb.Remove(sb.Length - 1, 1); //remove last seperator
         return sb.ToString();
     }
 

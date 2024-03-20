@@ -27,17 +27,17 @@ class DataGateway:
          self.dataRecorder = DataRecorder(data[0], data[1]);
         
 
-    def on_imu_data_stream(self, suitData, application_mode):
+    def on_imu_data_stream(self, suit_data, application_mode):
         t = time.process_time()
         
         if application_mode == ApplicationMode.TRAINING:
             #Write to DataRecorder
-            self.dataRecorder.log_data(suitData)
+            self.dataRecorder.log_data(suit_data)
         if application_mode == ApplicationMode.TESTING:
            #Send to ModelTester
-           exercise_recognition = ModelTester.get_exercise_recognition(suit_data)
+           exercise_recognition = self.modelTester.get_exercise_recognition(suit_data)
            if exercise_recognition != None:
-               error = ModelTester.get_feedback_from_model(exercise_recognition, suit_data)
+               error = self.modelTester.get_feedback_from_model(exercise_recognition, suit_data)
                return exercise_recognition + "_" + error
            else: 
             return exercise_recognition
@@ -89,13 +89,12 @@ class DataGateway:
         files = [f for f in os.listdir(thisdir + "/core/samples/")]
         return files
 
-    def on_testing_init(self, init):
+    def on_testing_init(self, init, header):
         data = init.split("_")
-        #TODO: is it "true" or "1" or 1?
-        if data[1] == "True":
+        if data[2] == "True":
             training_data = DataRetriever.get_data_from_csv_for_exercise_recognition()
             ModelTrainer.train_exercise_recognition_model(training_data)
-        self.modelTester = ModelTester(data[0])
+        self.modelTester = ModelTester(data[0], data[1], header)
         t = time.process_time()
 
     def get_recorded_data(self):

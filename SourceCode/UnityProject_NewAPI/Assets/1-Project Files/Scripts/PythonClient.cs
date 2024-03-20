@@ -103,7 +103,8 @@ public class PythonClient
                     }
                     else
                     {
-                        publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
+                        ImuDataObject imuDataObject = new ImuDataObject(TrainingType.PLANKHOLD, null, 123); //dummy
+                        publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting + ";" + imuDataObject.GetCsvHeader(","));
                         testingMode = State.RUNNING;
                     }
 
@@ -200,7 +201,6 @@ public class PythonClient
 
     public void GetRecordedExercises()
     {
-        testingMode = State.INIT;
         getRecordedExercises = true;
     }
 
@@ -210,10 +210,10 @@ public class PythonClient
         modelInfo = subjectIds + "_" + trainingType + "_" + algorithm;
     }
 
-    public void StartTestingMode(String algorithm, Boolean newRecognitionModel)
+    public void StartTestingMode(String subjectIds, String algorithm, Boolean newRecognitionModel)
     {
         testingMode = State.INIT;
-        modelInfoForTesting = algorithm + "_" + newRecognitionModel;
+        modelInfoForTesting = subjectIds + "_" + algorithm + "_" + newRecognitionModel;
     }
 
     public void StopTestingMode()
