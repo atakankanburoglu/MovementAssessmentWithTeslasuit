@@ -156,12 +156,12 @@ public class TrainingManager : MonoBehaviour
         {
             Debug.Log("json");
             string json = JsonConvert.SerializeObject(infoToJSon.replayInfo.ToArray(), Formatting.Indented);
+            SampleType sampleType = (SampleType)Enum.Parse(typeof(SampleType), sampleTypeDropDown.options[sampleTypeDropDown.value].text);
 
             //write string to file
-            System.IO.File.WriteAllText(string.Concat(path, $"{infoToJSon.subjectName}", "_", $"{ infoToJSon.trainingType}", ".json"), json);
+            System.IO.File.WriteAllText(string.Concat(path, infoToJSon.subjectName, "_", infoToJSon.trainingType, "_", sampleType, ".json"), json);
             infoToJSon = null;
 
-            SampleType sampleType = (SampleType)Enum.Parse(typeof(SampleType), sampleTypeDropDown.options[sampleTypeDropDown.value].text);
             dataGateway.PythonClient.StopTrainingMode(sampleType);
         }
         FillTrainingTypeDropDownSample();

@@ -46,12 +46,21 @@ class ModelTrainer:
         thisdir = os.getcwd()
         t = time.time()
 
+        #Preprocessing
         # delete TrainingType 
         training_data.drop(['TrainingType'], axis=1, inplace=True)
-        
-        y = training_data['Timestamp']
-        X = training_data.drop(['Timestamp'], axis=1) 
+        #delete all 0s
+        training_data = training_data.loc[:, (training_data != 0).any(axis=0)]
+        #round seconds to whole number
+        training_data['Timestamp'] = training_data['Timestamp'].astype(int)
+        #split into multiple dataframes depending on timestamp
+        training_gb = training_data.groupby(['Timestamp'])
+        training_dfs = [training_gb.get_group(x) for x in training_gb.groups]
+        Y = [x.agg(['mean', 'std']) for x in training_dfs]
 
+        axes = pd.DataFrame(list(training_data))
+        X = pd.concat((axes, training_data['Timestamp']), axis=0)
+        
         X.fillna("0", inplace=True, axis=1)
 
         if(algorithm == "LR"):
