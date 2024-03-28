@@ -44,41 +44,37 @@ class ModelTester:
         return exercise_recognition[0]
 
 
-    def get_feedback_from_model(self, exercise_recognition, suit_data):
+    def get_feedback_from_model(self, exercise_recognition, suit_data):   
         thisdir = os.getcwd()
         files = [f for f in os.listdir(thisdir + "/core/ml_models/")]
-        newest_model_time = 0
-        newest_model_path = ""
-        for f in files:
-            file_name = f.split("_") #TODO: has to match subject ids perfectly?
-            if(file_name[0] == self.subject_ids and file_name[1] == exercise_recognition and file_name[2] == self.algorithm):
-                if newest_model_time < int(file_name[3]):
-                    newest_model_time = int(file_name[3])
-                    newest_model_path = f
-        model = load(thisdir + "/core/ml_models/" + newest_model_path)
+        #transpose data
+        suit_data = np.transpose(suit_data[2:])
+        testing_df = pd.DataFrame(suit_data, columns = ['HumanBoneIndex_Axis', 'Value'])
+        testing_dfs = np.split(testing_df, np.arange(20, len(testing_df), 20), axis=0)
+        for df in testing_dfs: 
+            newest_model_time = 0
+            newest_model_path = ""
+            humanboneIndex_name = (df.loc[0][0].split('_'))[0]
+            for f in files:
+                file_name = f.split("_") #TODO: has to match subject ids perfectly?
+                if(file_name[0] == self.subject_ids and file_name[1] == exercise_recognition and file_name[2] == self.algorithm and file_name[3] == humanboneIndex_name):
+                    if newest_model_time < int(file_name[3]):
+                        newest_model_time = int(file_name[3])
+                        newest_model_path = f
+            model = load(thisdir + "/core/ml_models/" + newest_model_path)
+            mean_std_df = model.predict(df)
+            # Calculate absolute difference, subtract standard deviation and set all negative values to zero.
+            # Result: By how much is the standard deviation exceeded, i.e. how big is the error? Within std equals no error.
+            difference = mean_std_df.loc['mean'] - df.loc['Value']
+            absDiff = abs(difference)
+            error = absDiff - mean_std_df.loc['std']
 
-        tmp = []
-        tmp.append(suit_data.tolist())
-        data = pd.DataFrame(tmp, columns=self.feature_names)
-        data.drop(['TrainingType'], axis=1) 
-        testing_data = data['Timestamp'].values
-        testing_data = testing_data.reshape(-1, 1) 
-        mean = model.predict(testing_data)
-        std = np.std(mean, axis=0)
+            # Then take all values where deviation from mean was downwards, i.e. actual smaller than mean
+            # and multiply by -1. No we have positive values for upwards deviation and negative values
+            # for downwards deviation.
+            error[data < mean] = error[data < mean] * (-1)
 
-        # Calculate absolute difference, subtract standard deviation and set all negative values to zero.
-        # Result: By how much is the standard deviation exceeded, i.e. how big is the error? Within std equals no error.
-        difference = mean - data
-        absDiff = abs(difference)
-        error = absDiff - std
-
-
-        # Then take all values where deviation from mean was downwards, i.e. actual smaller than mean
-        # and multiply by -1. No we have positive values for upwards deviation and negative values
-        # for downwards deviation.
-        error[data < mean] = error[data < mean] * (-1)
-
-        # then make the error relative. Add 0.01 to avoid division by zero
-        relativeError = error / (std + 0.01)
+            # then make the error relative. Add 0.01 to avoid division by zero
+            relativeError = error / (std + 0.01)
 
         return relativeError

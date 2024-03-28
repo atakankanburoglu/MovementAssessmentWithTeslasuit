@@ -47,34 +47,51 @@ class ModelTrainer:
         t = time.time()
 
         #Preprocessing
-        # delete TrainingType 
+        #delete TrainingType, Timestamp and Spine, Chest and Left - & Rightshoulder (have no values)
         training_data.drop(['TrainingType'], axis=1, inplace=True)
-        #delete all 0s
-        training_data = training_data.loc[:, (training_data != 0).any(axis=0)]
-        #round seconds to whole number
-        training_data['Timestamp'] = training_data['Timestamp'].astype(int)
-        #split into multiple dataframes depending on timestamp
-        training_gb = training_data.groupby(['Timestamp'])
-        training_dfs = [training_gb.get_group(x) for x in training_gb.groups]
-        Y = [x.agg(['mean', 'std']) for x in training_dfs]
-
-        axes = pd.DataFrame(list(training_data))
-        X = pd.concat((axes, training_data['Timestamp']), axis=0)
-        
-        X.fillna("0", inplace=True, axis=1)
-
-        if(algorithm == "LR"):
-            lr = linear_model.LinearRegression()
-            lr.fit(X, y)
-            print("Dumping LR Model Results")
-            dump(lr, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
-        if(algorithm == "RF"):
-            rf = RandomForestRegressor(max_depth=2, random_state=0)
-            rf.fit(X, y)
-            print("Dumping RF Model Results")
-            dump(rf, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
-        if(algorithm == "NN"):
-            nn = MLPRegressor()
-            nn.fit(X, y)
-            print("Dumping NN Model Results")
-            dump(nn, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
+        training_data.drop(['Timestamp'], axis=1, inplace=True)
+        training_data = training_data.loc[:,~training_data.columns.str.startswith('Spine')]
+        training_data = training_data.loc[:,~training_data.columns.str.startswith('Chest')]
+        training_data = training_data.loc[:,~training_data.columns.str.startswith('LeftShoulder')]
+        training_data = training_data.loc[:,~training_data.columns.str.startswith('RightShoulder')]
+        #Create mean and std for every column
+        mean_std_df = training_data.agg(['mean', 'std'])
+        #split each HumanBoneIndex into different dfs 
+        humanboneindex_dfs = np.split(training_data, np.arange(20, len(training_data.columns), 20), axis=1)
+        #per HumanBoneIndex_df split all columns and find only unique values
+        for humanboneindex in humanboneindex_dfs:
+            #create empty training df per humanboneindex to fill
+            training_df = pd.DataFrame(columns=['HumanBoneIndex_axis', 'Value', 'mean', 'std'])
+            humanboneIndex_name = []
+            humanboneindex_axis_dfs = np.split(humanboneindex, np.arange(1, len(humanboneindex.columns), 1), axis=1)
+            for axis in  humanboneindex_axis_dfs:
+                humanboneIndex_name = axis.columns[0].split('_')
+                #round to 5 decimals places
+                axis = axis.round(5)
+                axis = axis.drop_duplicates()
+                #add each unique value with axis name, value, mean and std to final training_df
+                for i in range(len(axis)):
+                    axis_name = axis.columns[0]
+                    value = axis.iloc[i][0]
+                    mean = mean_std_df.loc['mean'][axis.columns[0]]
+                    std = mean_std_df.loc['std'][axis.columns[0]]
+                    training_df.loc[len(training_df)] = {'HumanBoneIndex_Axis':i+1, 'Value': axis.iloc[i][0], 'mean': mean_std_df.loc['mean'][axis.columns[0]], 'std': mean_std_df.loc['std'][axis.columns[0]]}    
+            X = training_df.loc[:, 'HumanBoneIndex_Axis':'Value']
+            X.fillna("0", inplace=True, axis=1)
+            Y = training_df.loc[:, 'mean':'std']
+            
+            if(algorithm == "LR"):
+                lr = linear_model.LinearRegression()
+                lr.fit(X, Y)
+                print("Dumping LR Model Results")
+                dump(lr, thisdir + "/core/ml_models/" + save_string + "_" + humanboneIndex_name[0] + "_" + str(int(t)))
+            if(algorithm == "RF"):
+                rf = RandomForestRegressor(max_depth=2, random_state=0)
+                rf.fit(X, Y)
+                print("Dumping RF Model Results")
+                dump(rf, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
+            if(algorithm == "NN"):
+                nn = MLPRegressor()
+                nn.fit(X, Y)
+                print("Dumping NN Model Results")
+                dump(nn, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
