@@ -109,6 +109,11 @@ public class PythonClient
                     }
 
                 }
+                if(testingMode == State.RECORDED)
+                {
+                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
+                    testingMode = State.IDLE;
+                }
                 if (testingMode == State.FINISHED)
                 {
                     publisher.SendFrame("TestingMode " + testingMode);
@@ -214,6 +219,12 @@ public class PythonClient
     {
         testingMode = State.INIT;
         modelInfoForTesting = subjectIds + "_" + algorithm + "_" + newRecognitionModel;
+    }
+
+    public void StartRecordedTestingMode(String recordedExercise, Boolean newRecognitionModel)
+    {
+        testingMode = State.RECORDED;
+        modelInfoForTesting = recordedExercise + ";" + newRecognitionModel;
     }
 
     public void StopTestingMode()

@@ -13796,7 +13796,7 @@ GameObject:
   - component: {fileID: 1414334284}
   - component: {fileID: 1414334283}
   m_Layer: 5
-  m_Name: Choose Model
+  m_Name: Choose Testing File
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
