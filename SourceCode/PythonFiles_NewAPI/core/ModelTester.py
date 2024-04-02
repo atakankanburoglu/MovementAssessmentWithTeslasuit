@@ -25,7 +25,7 @@ class ModelTester:
     def __init__(self, subject_ids, algorithm, feature_names):
         self.subject_ids = subject_ids
         self.algorithm = algorithm
-        self.feature_names = feature_names.split(",")
+        self.feature_names = feature_names
     
     def get_exercise_recognition(self, suit_data):
         tmp = []
@@ -48,18 +48,28 @@ class ModelTester:
         thisdir = os.getcwd()
         files = [f for f in os.listdir(thisdir + "/core/ml_models/")]
         #transpose data
-        suit_data = np.transpose(suit_data[2:])
-        testing_df = pd.DataFrame(suit_data, columns = ['HumanBoneIndex_Axis', 'Value'])
+        suit_data.drop(['TrainingType'], axis=0, inplace=True)
+        suit_data.drop(['Timestamp'], axis=0, inplace=True)
+        suit_data = suit_data.loc[~suit_data.index.str.startswith('Spine')]
+        suit_data = suit_data.loc[~suit_data.index.str.startswith('Chest')]
+        suit_data = suit_data.loc[~suit_data.index.str.startswith('LeftShoulder')]
+        suit_data = suit_data.loc[~suit_data.index.str.startswith('RightShoulder')]
+        testing_df = pd.DataFrame(columns = ['HumanBoneIndex_Axis', 'Value'])
+        testing_df['HumanBoneIndex_Axis'] = suit_data.index
+        testing_df['Value'] = suit_data.values
         testing_dfs = np.split(testing_df, np.arange(20, len(testing_df), 20), axis=0)
+        
         for df in testing_dfs: 
+            humanboneIndex_name = (df.loc[0][0].split('_'))[0]
+            df['HumanBoneIndex_Axis'] = df.index
+            print(df)
             newest_model_time = 0
             newest_model_path = ""
-            humanboneIndex_name = (df.loc[0][0].split('_'))[0]
             for f in files:
                 file_name = f.split("_") #TODO: has to match subject ids perfectly?
                 if(file_name[0] == self.subject_ids and file_name[1] == exercise_recognition and file_name[2] == self.algorithm and file_name[3] == humanboneIndex_name):
-                    if newest_model_time < int(file_name[3]):
-                        newest_model_time = int(file_name[3])
+                    if newest_model_time < int(file_name[4]):
+                        newest_model_time = int(file_name[4])
                         newest_model_path = f
             model = load(thisdir + "/core/ml_models/" + newest_model_path)
             mean_std_df = model.predict(df)

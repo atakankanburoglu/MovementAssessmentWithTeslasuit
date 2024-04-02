@@ -96,20 +96,16 @@ public class PythonClient
                 }
                 if (testingMode == State.INIT)
                 {
-                    if (getRecordedExercises)
-                    {
-                        publisher.SendFrame("TestingMode " + testingMode);
-
-                    }
-                    else
-                    {
-                        ImuDataObject imuDataObject = new ImuDataObject(TrainingType.PLANKHOLD, null, 123); //dummy
-                        publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting + ";" + imuDataObject.GetCsvHeader(","));
-                        testingMode = State.RUNNING;
-                    }
-
+                    ImuDataObject imuDataObject = new ImuDataObject(TrainingType.PLANKHOLD, null, 123); //dummy
+                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting + ";" + imuDataObject.GetCsvHeader(","));
+                    testingMode = State.RUNNING;
+                  
                 }
-                if(testingMode == State.RECORDED)
+                if (getRecordedExercises)
+                {
+                    publisher.SendFrame("TestingMode " + testingMode);
+                }
+                if (testingMode == State.RECORDED)
                 {
                     publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
                     testingMode = State.IDLE;
@@ -221,10 +217,10 @@ public class PythonClient
         modelInfoForTesting = subjectIds + "_" + algorithm + "_" + newRecognitionModel;
     }
 
-    public void StartRecordedTestingMode(String recordedExercise, Boolean newRecognitionModel)
+    public void StartRecordedTestingMode(String subjectIds, String algorithm, String recordedExercise, Boolean newRecognitionModel)
     {
         testingMode = State.RECORDED;
-        modelInfoForTesting = recordedExercise + ";" + newRecognitionModel;
+        modelInfoForTesting = subjectIds + ";" + algorithm + ";" + recordedExercise + ";" + newRecognitionModel;
     }
 
     public void StopTestingMode()

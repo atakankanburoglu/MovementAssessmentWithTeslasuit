@@ -60,19 +60,20 @@ class Server:
             if(string_topic == "TestingMode"):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
+                if(data[0] == "IDLE"):
+                    self.thread2 = threading.Thread(target=self.send_thread)
+                    self.thread2.start()
+                    exercise_files = self.dataGateway.on_get_exercise_list()
+                    self.pushResult("TestingMode " + ','.join(exercise_files))
                 if(data[0] == "INIT"):
-                    if(self.thread2 == None):
-                        self.thread2 = threading.Thread(target=self.send_thread)
-                        self.thread2.start()
-                    if(len(data) == 1):
-                        exercise_files = self.dataGateway.on_get_exercise_list()
-                        self.pushResult("TestingMode " + ','.join(exercise_files))
-                    if(len(data) > 1):
                         self.dataGateway.on_testing_init(data[1], data[2])
-                        self.applicationMode = ApplicationMode.TESTING    
+                        self.applicationMode = ApplicationMode.TESTING   
+                if(data[0] == "RECORDED"):
+                    self.dataGateway.on_testing_recorded(data[1], data[2], data[3], data[4])
                 if(data[0] == "FINISHED"):
                     self.thread2.stop();
                     self.applicationMode = ApplicationMode.IDLE  
+            string_topic = ""
 
             
             #self.send_socket.send_string("ErrorResponseStream true")

@@ -38,7 +38,7 @@ class DataGateway:
            exercise_recognition = self.modelTester.get_exercise_recognition(suit_data)
            if exercise_recognition != None:
                error = self.modelTester.get_feedback_from_model(exercise_recognition, suit_data)
-               return exercise_recognition + "_" + error
+               return exercise_recognition, error
            else: 
             return exercise_recognition
        
@@ -81,7 +81,8 @@ class DataGateway:
         training_type = data[1]
         algorithm = data[2]
         training_data = DataRetriever.get_data_from_csv_for_feedback_model(subject_ids, training_type)
-        ModelTrainer.train_feedback_model(training_data, algorithm, init)
+        feature_names = init.split(",")
+        ModelTrainer.train_feedback_model(training_data, algorithm, feature_names)
         t = time.process_time()
 
     def on_get_exercise_list(self):
@@ -96,6 +97,16 @@ class DataGateway:
             ModelTrainer.train_exercise_recognition_model(training_data)
         self.modelTester = ModelTester(data[0], data[1], header)
         t = time.process_time()
+
+    def on_testing_recorded(self, subject_ids, algorithm, recorded_file_name, new_recognition_model):
+        thisdir = os.getcwd()
+        testing_df = pd.read_csv(thisdir + "/core/samples/" + recorded_file_name)
+        if new_recognition_model == "True":
+            training_data = DataRetriever.get_data_from_csv_for_exercise_recognition()
+            ModelTrainer.train_exercise_recognition_model(training_data)
+        self.modelTester = ModelTester(subject_ids, algorithm, testing_df.columns)
+        for i in range(len(testing_df)):
+            exercise_recognition, error = self.on_imu_data_stream(testing_df.loc[i], ApplicationMode.TESTING)
 
     def get_recorded_data(self):
         return self.dataRecorder.dataToDataframe()

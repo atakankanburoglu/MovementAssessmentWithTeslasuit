@@ -45,7 +45,6 @@ class ModelTrainer:
     def train_feedback_model(training_data, algorithm, save_string):
         thisdir = os.getcwd()
         t = time.time()
-
         #Preprocessing
         #delete TrainingType, Timestamp and Spine, Chest and Left - & Rightshoulder (have no values)
         training_data.drop(['TrainingType'], axis=1, inplace=True)
@@ -61,7 +60,7 @@ class ModelTrainer:
         #per HumanBoneIndex_df split all columns and find only unique values
         for humanboneindex in humanboneindex_dfs:
             #create empty training df per humanboneindex to fill
-            training_df = pd.DataFrame(columns=['HumanBoneIndex_axis', 'Value', 'mean', 'std'])
+            training_df = pd.DataFrame(columns=['HumanBoneIndex_Axis', 'Value', 'mean', 'std'])
             humanboneIndex_name = []
             humanboneindex_axis_dfs = np.split(humanboneindex, np.arange(1, len(humanboneindex.columns), 1), axis=1)
             for axis in  humanboneindex_axis_dfs:
@@ -75,16 +74,15 @@ class ModelTrainer:
                     value = axis.iloc[i][0]
                     mean = mean_std_df.loc['mean'][axis.columns[0]]
                     std = mean_std_df.loc['std'][axis.columns[0]]
-                    training_df.loc[len(training_df)] = {'HumanBoneIndex_Axis':i+1, 'Value': axis.iloc[i][0], 'mean': mean_std_df.loc['mean'][axis.columns[0]], 'std': mean_std_df.loc['std'][axis.columns[0]]}    
+                    training_df.loc[len(training_df)] = {'HumanBoneIndex_Axis':i, 'Value': axis.iloc[i][0], 'mean': mean_std_df.loc['mean'][axis.columns[0]], 'std': mean_std_df.loc['std'][axis.columns[0]]}    
             X = training_df.loc[:, 'HumanBoneIndex_Axis':'Value']
             X.fillna("0", inplace=True, axis=1)
             Y = training_df.loc[:, 'mean':'std']
-            
             if(algorithm == "LR"):
                 lr = linear_model.LinearRegression()
                 lr.fit(X, Y)
                 print("Dumping LR Model Results")
-                dump(lr, thisdir + "/core/ml_models/" + save_string + "_" + humanboneIndex_name[0] + "_" + str(int(t)))
+                dump(lr, thisdir + "/core/ml_models/" + save_string[0] + "_" + humanboneIndex_name[0] + "_" + str(int(t)))
             if(algorithm == "RF"):
                 rf = RandomForestRegressor(max_depth=2, random_state=0)
                 rf.fit(X, Y)
@@ -95,3 +93,4 @@ class ModelTrainer:
                 nn.fit(X, Y)
                 print("Dumping NN Model Results")
                 dump(nn, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
+        print("Model creation (in min):" + str((time.time() - t)/60))

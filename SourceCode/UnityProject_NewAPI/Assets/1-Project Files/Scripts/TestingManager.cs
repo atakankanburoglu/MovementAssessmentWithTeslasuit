@@ -20,7 +20,12 @@ public class TestingManager : MonoBehaviour
 
     //Recorded Testing Setting Panel
     [SerializeField]
-    private Dropdown recordedExercisesDropDown;
+    private TMP_InputField subjectIDsRecordedInput;
+    [SerializeField]
+    private Dropdown algorithmRecordedDropDown;
+    [SerializeField]
+    private TMP_Dropdown recordedExercisesDropDown;
+    private int recordedExercisesDropDownOption;
     [SerializeField]
     private Toggle newRecognitionModelRecordedToggle;
     [SerializeField]
@@ -61,6 +66,7 @@ public class TestingManager : MonoBehaviour
     {
         FillAlgorithmDropDownModel();
         GetRecordedExercisesForDropdown();
+
     }
 
     void Update()
@@ -84,6 +90,7 @@ public class TestingManager : MonoBehaviour
         {
             timeInterval = 10.0f;
         }
+        recordedExercisesDropDown.value = recordedExercisesDropDownOption;
     }
 
     public void FillRecognizedExcerciseOutputInput(TrainingType trainingType)
@@ -98,6 +105,8 @@ public class TestingManager : MonoBehaviour
         string[] algorithms = Enum.GetNames(typeof(Algorithm));
         algorithmDropDown.ClearOptions();
         algorithmDropDown.AddOptions(new List<string>(algorithms));
+        algorithmRecordedDropDown.ClearOptions();
+        algorithmRecordedDropDown.AddOptions(new List<string>(algorithms));
     }
 
     public void ChooseAlgorithm()
@@ -108,7 +117,14 @@ public class TestingManager : MonoBehaviour
     void FillRecordedExercisesDropDownModel()
     {
         recordedExercisesDropDown.ClearOptions();
-        recordedExercisesDropDown.AddOptions(recordedExercisesList);
+        List<TMP_Dropdown.OptionData> optionList = new List<TMP_Dropdown.OptionData>();
+        foreach (String recordedExercises in recordedExercisesList)
+        {
+            var newOption = new TMP_Dropdown.OptionData();
+            newOption.text = recordedExercises;
+            optionList.Add(newOption);
+        }
+        recordedExercisesDropDown.AddOptions(optionList);
     }
 
     public void GetRecordedExercisesForDropdown()
@@ -121,10 +137,15 @@ public class TestingManager : MonoBehaviour
         this.recordedExercisesList = new List<string>(recordedExercises);
     }
 
+    public void SaveRecordedExerciseDropdownOption()
+    {
+        recordedExercisesDropDownOption = recordedExercisesDropDown.value;
+    }
     public void ChooseRecordedExercise()
     {
+        String algorithm = algorithmDropDown.options[algorithmDropDown.value].text;
         String exercise = recordedExercisesDropDown.options[recordedExercisesDropDown.value].text;
-        //dataGateway.PythonClient.StartTestingMode(exercise, true);
+        dataGateway.PythonClient.StartRecordedTestingMode(subjectIDsRecordedInput.text, algorithm, exercise, newRecognitionModelRecordedToggle.isOn);
     }
 
     public void StartFeedback()
