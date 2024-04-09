@@ -105,8 +105,12 @@ class DataGateway:
             training_data = DataRetriever.get_data_from_csv_for_exercise_recognition()
             ModelTrainer.train_exercise_recognition_model(training_data)
         self.modelTester = ModelTester(subject_ids, algorithm, testing_df.columns)
-        for i in range(len(testing_df)):
-            exercise_recognition, error = self.on_imu_data_stream(testing_df.loc[i], ApplicationMode.TESTING)
+        t = time.time()
+        for i in range(500):
+            self.on_imu_data_stream(testing_df.loc[i], ApplicationMode.TESTING)
+        print("File tested for (in min):" + str((time.time() - t)/60))
+        self.modelTester.plot_feedback_result(recorded_file_name)
+        return self.modelTester.relative_errors
 
     def get_recorded_data(self):
         return self.dataRecorder.dataToDataframe()

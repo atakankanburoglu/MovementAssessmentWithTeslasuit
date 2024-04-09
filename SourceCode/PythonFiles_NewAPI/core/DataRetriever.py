@@ -21,13 +21,13 @@ class DataRetriever:
                         file_name = f.split("_")
                         if(file_name[0] == str(id) and file_name[1] == training_type and file_name[2] == "Positive"):
                             df = pd.read_csv(thisdir + "/core/samples/" + f)
-                            training_data = pd.concat((df, training_data), axis=0)
+                            training_data = pd.concat((training_data, df), axis=0)
             else:
                 for f in files:
                         file_name = f.split("_")
                         if(file_name[0] == ids and file_name[1] == training_type and file_name[2] == "Positive"):
                             df = pd.read_csv(thisdir + "/core/samples/" + f)
-                            training_data = pd.concat((df, training_data), axis=0)
+                            training_data = pd.concat((training_data, df), axis=0)
         return training_data
 
     @staticmethod
@@ -39,5 +39,5 @@ class DataRetriever:
             file_name = f.split("_")
             if(file_name[2] == "Positive"):
                 df = pd.read_csv(thisdir + "/core/samples/" + f)
-                training_data = pd.concat((df, training_data), axis=0)
+                training_data = pd.concat((training_data, df), axis=0)
         return training_data

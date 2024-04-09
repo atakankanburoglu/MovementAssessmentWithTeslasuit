@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using Newtonsoft.Json;
 using System;
+using TsSDK;
 
 public class TestingManager : MonoBehaviour
 {
@@ -36,7 +37,33 @@ public class TestingManager : MonoBehaviour
     [SerializeField]
     private GameObject recognizedExercisePanel;
 
-    //Recording Panel
+    [SerializeField]
+    private TsHapticPlayer m_hapticPlayer;
+
+    [Range(1, 150)]
+    public int frequency;
+
+    [Range(1, 100)]
+    public int amplitude;
+
+    [Range(1, 320)]
+    public int pulseWidth;
+
+    [Range(10, 10000)]
+    public int durationMs;
+
+    public bool looped = false;
+
+    public int currentChannelIndex = 0;
+
+    public TsHumanBoneIndex TargetBoneIndex = TsHumanBoneIndex.LeftThumbDistal;
+
+    private IHapticDynamicPlayable m_hapticPlayable;
+
+    private Dictionary<TsHumanBoneIndex, List<IMapping2dElectricChannel>> m_channels = new Dictionary<TsHumanBoneIndex, List<IMapping2dElectricChannel>>();
+
+
+    //Feedback Panel
     [SerializeField]
     private GameObject startButton;
     [SerializeField]
@@ -148,6 +175,64 @@ public class TestingManager : MonoBehaviour
         dataGateway.PythonClient.StartRecordedTestingMode(subjectIDsRecordedInput.text, algorithm, exercise, newRecognitionModelRecordedToggle.isOn);
     }
 
+    public void GiveFeedback(Dictionary<TsHumanBoneIndex, int> feedback)
+    {
+        foreach (var boneIndex in TsHumanBones.SuitBones)
+        {
+            if(feedback.TryGetValue(boneIndex, out int value))
+            {
+                frequency = 150 * value;
+                amplitude = 100 * value;
+                pulseWidth = 320 * value;
+                TargetBoneIndex = boneIndex;
+                //Play(currentChannelIndex);
+                //TODO: show feedback through arrow
+            }
+        }
+    }
+
+    private void Validate()
+    {
+        ValidateChannels();
+        if (m_hapticPlayable != null)
+        {
+            m_hapticPlayable.Stop();
+        }
+
+        m_hapticPlayable = m_hapticPlayer.CreateTouch(frequency, amplitude, pulseWidth, durationMs);
+        m_hapticPlayable.IsLooped = looped;
+    }
+
+    private void ValidateChannels()
+    {
+        m_channels.Clear();
+        var channels = m_hapticPlayer.Device.Mapping2d.ElectricChannels;
+        foreach (var channel in channels)
+        {
+            if (!m_channels.ContainsKey(channel.BoneIndex))
+            {
+                m_channels.Add(channel.BoneIndex, new List<IMapping2dElectricChannel>());
+            }
+            m_channels[channel.BoneIndex].Add(channel);
+        }
+    }
+
+    public void Play(int channelIndex)
+    {
+        Validate();
+
+        if (!m_channels.TryGetValue(TargetBoneIndex, out var channelsGroup))
+        {
+            return;
+        }
+
+        var index = channelIndex % channelsGroup.Count;
+        var channel = channelsGroup[index];
+        m_hapticPlayable.Play();
+        m_hapticPlayable.AddChannel(channel);
+    }
+
+
     public void StartFeedback()
     {
         running = true;
@@ -156,6 +241,7 @@ public class TestingManager : MonoBehaviour
     public void PauseFeedback()
     {
         running = false;
+        m_hapticPlayable.IsPaused = !m_hapticPlayable.IsPaused;
     }
     public void StopFeedback()
     {
@@ -164,6 +250,8 @@ public class TestingManager : MonoBehaviour
 
         timerCountdown.gameObject.SetActive(false);
         timeInterval = 10.0f;
+
+        m_hapticPlayable.Stop();
     }
 
     public void Cancel()

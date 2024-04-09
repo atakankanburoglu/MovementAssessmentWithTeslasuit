@@ -2,15 +2,14 @@
   "ExpandedNodes": [
     "",
     "\\core",
+    "\\core\\analysis",
     "\\core\\ml_models",
     "\\core\\samples",
-    "\\enums",
     "\\server",
     "\\training",
     "\\training\\data",
-    "\\training\\old-data",
-    "\\training\\positive-training-data"
+    "\\training\\old-data"
   ],
-  "SelectedNode": "\\core\\ModelTester.py",
+  "SelectedNode": "\\server\\Server.py",
   "PreviewInSolutionExplorer": false
 }

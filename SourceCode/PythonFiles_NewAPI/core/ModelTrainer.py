@@ -60,24 +60,26 @@ class ModelTrainer:
         #per HumanBoneIndex_df split all columns and find only unique values
         for humanboneindex in humanboneindex_dfs:
             #create empty training df per humanboneindex to fill
-            training_df = pd.DataFrame(columns=['HumanBoneIndex_Axis', 'Value', 'mean', 'std'])
+            training_df = pd.DataFrame(columns=['HumanBoneIndex_Axis', 'Value', 'Mean', 'Std'])
             humanboneIndex_name = []
             humanboneindex_axis_dfs = np.split(humanboneindex, np.arange(1, len(humanboneindex.columns), 1), axis=1)
+            a = 0
             for axis in  humanboneindex_axis_dfs:
+                a = a + 1
                 humanboneIndex_name = axis.columns[0].split('_')
                 #round to 5 decimals places
                 axis = axis.round(5)
                 axis = axis.drop_duplicates()
                 #add each unique value with axis name, value, mean and std to final training_df
                 for i in range(len(axis)):
-                    axis_name = axis.columns[0]
-                    value = axis.iloc[i][0]
+                    #axis_name = axis.columns[0]
+                    #value = axis.iloc[i][0]
                     mean = mean_std_df.loc['mean'][axis.columns[0]]
                     std = mean_std_df.loc['std'][axis.columns[0]]
-                    training_df.loc[len(training_df)] = {'HumanBoneIndex_Axis':i, 'Value': axis.iloc[i][0], 'mean': mean_std_df.loc['mean'][axis.columns[0]], 'std': mean_std_df.loc['std'][axis.columns[0]]}    
+                    training_df.loc[len(training_df)] = {'HumanBoneIndex_Axis':a, 'Value': axis.iloc[i][0], 'Mean': mean_std_df.loc['mean'][axis.columns[0]], 'Std': mean_std_df.loc['std'][axis.columns[0]]}    
             X = training_df.loc[:, 'HumanBoneIndex_Axis':'Value']
             X.fillna("0", inplace=True, axis=1)
-            Y = training_df.loc[:, 'mean':'std']
+            Y = training_df.loc[:, 'Mean':'Std']
             if(algorithm == "LR"):
                 lr = linear_model.LinearRegression()
                 lr.fit(X, Y)
@@ -87,10 +89,10 @@ class ModelTrainer:
                 rf = RandomForestRegressor(max_depth=2, random_state=0)
                 rf.fit(X, Y)
                 print("Dumping RF Model Results")
-                dump(rf, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
+                dump(rf, thisdir + "/core/ml_models/" + save_string[0] + "_" + humanboneIndex_name[0] + "_" + str(int(t)))
             if(algorithm == "NN"):
                 nn = MLPRegressor()
                 nn.fit(X, Y)
                 print("Dumping NN Model Results")
-                dump(nn, thisdir + "/core/ml_models/" + save_string + "_" + str(int(t)))
+                dump(nn, thisdir + "/core/ml_models/" + save_string[0] + "_" + humanboneIndex_name[0] + "_" + str(int(t)))
         print("Model creation (in min):" + str((time.time() - t)/60))

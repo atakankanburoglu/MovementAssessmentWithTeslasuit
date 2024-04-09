@@ -13782,6 +13782,14 @@ MonoBehaviour:
   recordedSettingPanel: {fileID: 85034583}
   recognizedExerciseOutput: {fileID: 2007517514}
   recognizedExercisePanel: {fileID: 259980311}
+  m_hapticPlayer: {fileID: 1646126921}
+  frequency: 0
+  amplitude: 0
+  pulseWidth: 0
+  durationMs: 0
+  looped: 0
+  currentChannelIndex: 0
+  TargetBoneIndex: 22
   startButton: {fileID: 44497661}
   pauseButton: {fileID: 1008019120}
   stopButton: {fileID: 1789741910}
