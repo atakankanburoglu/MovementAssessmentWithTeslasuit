@@ -9,9 +9,11 @@ public class ModeManager : MonoBehaviour
     [SerializeField]
     private Dropdown modeDropdown;
     [SerializeField]
-    private GameObject trainingUI;
+    private GameObject recordingUI;
     [SerializeField]
     private GameObject replayUI;
+    [SerializeField]
+    private GameObject trainingUI;
     [SerializeField]
     private GameObject testingUI;
     [SerializeField]
@@ -34,25 +36,36 @@ public class ModeManager : MonoBehaviour
     public void OptionChosenFromDropDown()
     {
         ApplicationMode mode = (ApplicationMode)Enum.Parse(typeof(ApplicationMode), modeDropdown.options[modeDropdown.value].text);
-        if (mode == ApplicationMode.Testing)
+        if (mode == ApplicationMode.Recording)
         {
+            recordingUI.SetActive(true);
             replayUI.SetActive(false);
-            testingUI.SetActive(true);
             trainingUI.SetActive(false);
+            testingUI.SetActive(false);
             cancelButton.SetActive(true);
         }
         else if (mode == ApplicationMode.Replay)
         {
+            recordingUI.SetActive(false);
             replayUI.SetActive(true);
-            testingUI.SetActive(false);
             trainingUI.SetActive(false);
+            testingUI.SetActive(false);
             cancelButton.SetActive(true);
         }
         else if (mode == ApplicationMode.Training)
         {
+            recordingUI.SetActive(false);
             replayUI.SetActive(false);
-            testingUI.SetActive(false);
             trainingUI.SetActive(true);
+            testingUI.SetActive(false);
+            cancelButton.SetActive(true);
+        }
+        else if (mode == ApplicationMode.Testing)
+        {
+            recordingUI.SetActive(false);
+            replayUI.SetActive(false);
+            trainingUI.SetActive(false);
+            testingUI.SetActive(true);
             cancelButton.SetActive(true);
         }
         else
@@ -63,9 +76,10 @@ public class ModeManager : MonoBehaviour
 
     public void CancelAllAction()
     {
+        recordingUI.SetActive(false);
         replayUI.SetActive(false);
-        testingUI.SetActive(false);
         trainingUI.SetActive(false);
+        testingUI.SetActive(false);
         cancelButton.SetActive(false);
         FillModeDropDown();
     }

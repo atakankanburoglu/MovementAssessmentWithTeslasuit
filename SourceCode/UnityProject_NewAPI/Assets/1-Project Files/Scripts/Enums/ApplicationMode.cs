@@ -1,8 +1,9 @@
 ﻿public enum ApplicationMode
 {
     Default,
-    Training,
+    Recording,
     Replay,
+    Training,
     Testing
 }
 
