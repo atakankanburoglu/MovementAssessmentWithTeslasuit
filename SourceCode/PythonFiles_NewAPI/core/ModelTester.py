@@ -35,38 +35,26 @@ class ModelTester:
         testing_data = pd.DataFrame(tmp, columns=self.feature_names)
         testing_data.drop(['TrainingType'], axis=1, inplace=True) 
         testing_data = testing_data.drop(['Timestamp'], axis=1)
-        #testing_data.apply(lambda x: x.str.replace('"', ""))
-        #for col in testing_data.columns:
-            #testing_data[col] = testing_data[col].astype(float)
-
         thisdir = os.getcwd()
         svc = load(thisdir + "/core/ml_models/exercise_recognition_svm_model")
         exercise_recognition = svc.predict(testing_data)
-
         return exercise_recognition[0]
 
 
     def get_feedback_from_model(self, exercise_recognition, suit_data):  
-        tmp = suit_data['Timestamp']
-        #delete empty columns
-        suit_data.drop(['TrainingType'], axis=0, inplace=True)
-        suit_data.drop(['Timestamp'], axis=0, inplace=True)
-        suit_data = suit_data.loc[~suit_data.index.str.startswith('Spine')]
-        suit_data = suit_data.loc[~suit_data.index.str.startswith('Chest')]
-        suit_data = suit_data.loc[~suit_data.index.str.startswith('LeftShoulder')]
-        suit_data = suit_data.loc[~suit_data.index.str.startswith('RightShoulder')]
-        
         plot_df = pd.DataFrame()
         plot_df['HumanBoneIndex_Axis'] = suit_data.index
-        plot_df['Timestamp'] = tmp
         
-        testing_df = pd.DataFrame(columns = ['HumanBoneIndex_Axis', 'Value'])
+        testing_df = pd.DataFrame()
         testing_df['HumanBoneIndex_Axis'] = suit_data.index
+        testing_df['Gyro_x'] = [0]*suit_data.index.size
+        testing_df['Gyro_y'] = [0]*suit_data.index.size
+        testing_df['Gyro_z'] = [0]*suit_data.index.size
         testing_df['Value'] = suit_data.values
-        testing_dfs = np.split(testing_df, np.arange(20, len(testing_df), 20), axis=0)
+        testing_dfs = np.split(testing_df, np.arange(int(len(suit_data.index)/10), len(suit_data.index), int(len(suit_data.index)/10)), axis=0)
         
         thisdir = os.getcwd()
-        files = [f for f in os.listdir(thisdir + "/core/ml_models/")]
+        files = [f for f in os.listdir(thisdir + "/core/ml_models/" + exercise_recognition + "/" + self.algorithm + "/")]
         relative_error = []
         i = 0
         for df in testing_dfs: 
@@ -82,8 +70,8 @@ class ModelTester:
                     if newest_model_time < int(file_name[4]):
                         newest_model_time = int(file_name[4])
                         newest_model_path = f
-            model = load(thisdir + "/core/ml_models/" + newest_model_path)
-            mean_std_df =  model.predict(df)
+            model = load(thisdir + "/core/ml_models/" + exercise_recognition + "/" + self.algorithm + "/" + newest_model_path)
+            mean_std_df =  model.predict(df.drop(['Value'], axis=1))
             df['Mean'] = mean_std_df[:,0]
             df['Std'] = mean_std_df[:,1]
             # Calculate absolute difference, subtract standard deviation and set all negative values to zero.
@@ -100,13 +88,7 @@ class ModelTester:
             df['RelativeError'] = df['FilteredError'] / (df['Std'] + 0.01)
             relative_error.extend(df['RelativeError'].values)
         plot_df['Error'] = relative_error
+        plot_df['Timestamp'] = int(time.time())
         self.relative_errors = pd.concat((self.relative_errors, plot_df), axis=0)
-        
-    def plot_feedback_result(self, filename):
-        self.relative_errors.to_csv("C:/Users/Camil/Documents/Uni/Master/Thesis/Code/MovementAssessmentWithTeslasuit/SourceCode/PythonFiles_NewAPI/core/analysis/" + filename + "relative_errors.csv")
-        print(self.relative_errors)
-        self.relative_errors['label'] = pd.cut(self.relative_errors['Error'],bins=[-100, -10, -1, 1, 10, 100], labels=['Big Minus Error', 'Minus Error', 'No Error', 'Error', 'Big Error'])
-        print(self.relative_errors)
-        d = self.relative_errors.groupby(['HumanBoneIndex_Axis','label'])['Timestamp'].size().unstack()
-        d.plot(kind='bar',stacked=True, title = "Test")
-        plt.show()
+     
+    

@@ -16,6 +16,8 @@ public class TrainingManager : MonoBehaviour
     [SerializeField]
     private TMP_InputField subjectIDsInput;
     [SerializeField]
+    private Toggle validationToggle;
+    [SerializeField]
     private GameObject modelSettingPanel;
 
     public TsHumanAnimator tsHumanAnimator;
@@ -50,8 +52,6 @@ public class TrainingManager : MonoBehaviour
         algorithmDropDownModel.AddOptions(new List<string>(names));
     }
 
-
-
     public void CreateNewModel()
     {
         if (subjectIDsInput.text == string.Empty)
@@ -62,7 +62,7 @@ public class TrainingManager : MonoBehaviour
         {
             Algorithm algorithm = (Algorithm)Enum.Parse(typeof(Algorithm), algorithmDropDownModel.options[algorithmDropDownModel.value].text);
             TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownModel.options[trainingTypeDropDownModel.value].text);
-            dataGateway.PythonClient.CreateNewModel(subjectIDsInput.text, trainingType, algorithm);
+            dataGateway.PythonClient.CreateNewModel(subjectIDsInput.text, trainingType, algorithm, validationToggle.isOn);
         }
         
     }

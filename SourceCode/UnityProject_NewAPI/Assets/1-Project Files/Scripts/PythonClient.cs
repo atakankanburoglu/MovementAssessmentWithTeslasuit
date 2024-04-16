@@ -205,10 +205,10 @@ public class PythonClient
         getRecordedExercises = true;
     }
 
-    public void CreateNewModel(String subjectIds, TrainingType trainingType, Algorithm algorithm)
+    public void CreateNewModel(String subjectIds, TrainingType trainingType, Algorithm algorithm, Boolean validate)
     {
         createModel = true;
-        modelInfo = subjectIds + "_" + trainingType + "_" + algorithm;
+        modelInfo = subjectIds + ";" + trainingType + ";" + algorithm + ";" + validate;
     }
 
     public void StartTestingMode(String subjectIds, String algorithm, Boolean newRecognitionModel)

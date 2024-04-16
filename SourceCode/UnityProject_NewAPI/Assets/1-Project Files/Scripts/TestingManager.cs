@@ -170,7 +170,7 @@ public class TestingManager : MonoBehaviour
     }
     public void ChooseRecordedExercise()
     {
-        String algorithm = algorithmDropDown.options[algorithmDropDown.value].text;
+        String algorithm = algorithmRecordedDropDown.options[algorithmRecordedDropDown.value].text;
         String exercise = recordedExercisesDropDown.options[recordedExercisesDropDown.value].text;
         dataGateway.PythonClient.StartRecordedTestingMode(subjectIDsRecordedInput.text, algorithm, exercise, newRecognitionModelRecordedToggle.isOn);
     }

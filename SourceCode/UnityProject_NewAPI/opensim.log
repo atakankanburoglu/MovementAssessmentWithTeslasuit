@@ -3359,3 +3359,8 @@
 [2024-04-10 11:31:51.651] [info] Loaded model TeslasuitModel from file C:\Program Files\Teslasuit\Studio\./resources/osim\osim_model/TeslasuitModelWithUnconstrainedArms.osim
 [2024-04-10 11:31:51.858] [info] Loaded model TeslasuitModel from file C:\Program Files\Teslasuit\Studio\./resources/osim\osim_model/TeslasuitModelWithUnconstrainedArms.osim
 [2024-04-10 11:31:51.962] [info] InverseKinematicsSolver found 14 model frames to track.
+[2024-04-10 14:35:10.863] [info] Loaded model TeslasuitModel from file C:\Program Files\Teslasuit\Studio\./resources/osim\osim_model/TeslasuitModelWithUnconstrainedArms.osim
+[2024-04-10 14:35:11.101] [info] Loaded model TeslasuitModel from file C:\Program Files\Teslasuit\Studio\./resources/osim\osim_model/TeslasuitModelWithUnconstrainedArms.osim
+[2024-04-10 14:35:11.439] [info] InverseKinematicsSolver found 14 model frames to track.
+[2024-04-10 14:35:12.778] [info] Loaded model TeslasuitModel from file C:\Program Files\Teslasuit\Studio\./resources/osim\osim_model/TeslasuitModelWithUnconstrainedArms.osim
+[2024-04-10 14:35:12.842] [info] InverseKinematicsSolver found 14 model frames to track.

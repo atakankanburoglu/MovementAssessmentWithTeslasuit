@@ -3,13 +3,12 @@
     "",
     "\\core",
     "\\core\\analysis",
-    "\\core\\ml_models",
-    "\\core\\samples",
+    "\\core\\analysis\\old",
     "\\server",
     "\\training",
     "\\training\\data",
     "\\training\\old-data"
   ],
-  "SelectedNode": "\\server\\Server.py",
+  "SelectedNode": "\\core\\DataRetriever.py",
   "PreviewInSolutionExplorer": false
 }

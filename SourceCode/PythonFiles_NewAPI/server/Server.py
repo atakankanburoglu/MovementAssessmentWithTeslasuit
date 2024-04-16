@@ -55,7 +55,14 @@ class Server:
             if(string_topic == "CreateModel"):
                 stringPayload = str(payload, "utf-8")
                 data = stringPayload.split(";")
-                self.dataGateway.on_create_feedback_model(data[0])
+                subject_ids = data[0]
+                training_type = data[1]
+                algorithm = data[2]
+                validate = data[3]
+                algorithm_lst = ("LR", "RF", "NN") #"RF", "LR", 
+                #training_type_lst = (training_type, "SIDEPLANKLEFT", "SIDEPLANKRIGHT", "FULLSQUAT")
+                for a in algorithm_lst:
+                    self.dataGateway.on_create_feedback_model(subject_ids, training_type, a, validate)
                 self.applicationMode = ApplicationMode.MODELCREATION            
             if(string_topic == "TestingMode"):
                 stringPayload = str(payload, "utf-8")

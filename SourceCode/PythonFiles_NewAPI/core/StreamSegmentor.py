@@ -1,6 +1,6 @@
 import Config
 from training.ClassificationResult import ClassificationType, ClassificationExercise
-from core.DenoiseProxy import DenoiseProxy
+from core.DataDenoiser import DataDenoiser
 from data.DataAccess import DataAccess
 
 
@@ -8,7 +8,7 @@ class StreamSegmentor:
     def __init__(self):
         self.topDetected = False
         self.repStarted = False
-        self.denoiseProxy = DenoiseProxy()
+        self.denoiseProxy = None
         self.state = "UNKNOWN"
         self.negativeCount = 0
         self.last_recognized_exercise = ClassificationExercise.PLANKHOLD
