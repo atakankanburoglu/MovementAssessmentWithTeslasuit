@@ -3,12 +3,16 @@
     "",
     "\\core",
     "\\core\\analysis",
-    "\\core\\analysis\\old",
-    "\\server",
-    "\\training",
-    "\\training\\data",
-    "\\training\\old-data"
+    "\\core\\analysis\\scores",
+    "\\core\\ml_models",
+    "\\core\\ml_models\\PLANKHOLD",
+    "\\core\\ml_models\\PLANKHOLD\\best",
+    "\\core\\ml_models\\PLANKHOLD\\best\\all_ax",
+    "\\core\\ml_models\\SIDEPLANKLEFT",
+    "\\core\\ml_models\\SIDEPLANKLEFT\\best",
+    "\\core\\ml_models\\SIDEPLANKLEFT\\best\\no_magn9x",
+    "\\core\\samples"
   ],
-  "SelectedNode": "\\core\\DataRetriever.py",
+  "SelectedNode": "\\core\\ModelTester.py",
   "PreviewInSolutionExplorer": false
 }

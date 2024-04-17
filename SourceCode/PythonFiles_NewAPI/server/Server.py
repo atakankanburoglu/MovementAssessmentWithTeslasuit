@@ -76,7 +76,8 @@ class Server:
                         self.dataGateway.on_testing_init(data[1], data[2])
                         self.applicationMode = ApplicationMode.TESTING   
                 if(data[0] == "RECORDED"):
-                    self.dataGateway.on_testing_recorded(data[1], data[2], data[3], data[4])
+                    self.dataGateway.on_testing_recorded_all()
+                    #self.dataGateway.on_testing_recorded(data[1], data[2], data[3], data[4])
                 if(data[0] == "FINISHED"):
                     self.thread2.stop();
                     self.applicationMode = ApplicationMode.IDLE  

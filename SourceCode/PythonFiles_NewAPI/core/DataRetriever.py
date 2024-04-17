@@ -46,6 +46,9 @@ class DataRetriever:
         for f in files:
             file_name = f.split("_")
             if(file_name[2] == "Positive"):
-                df = pd.read_csv(thisdir + "/core/samples/" + f)
-                training_data.append(df)
+                if training_data.empty:
+                    training_data = pd.read_csv(thisdir + "/core/samples/" + f)
+                else:  
+                    df = pd.read_csv(thisdir + "/core/samples/" + f, header = 0)
+                    training_data = pd.concat((pos_data, df), axis=0) 
         return training_data

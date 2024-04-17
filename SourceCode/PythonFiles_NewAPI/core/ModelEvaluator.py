@@ -20,6 +20,40 @@ import os
 class ModelEvaluator:
 
     @staticmethod
+    def plot_feedback_result_heatmaps(self, result):
+        thisdir = os.getcwd()
+        f = open(thisdir + "/core/analysis/relative_errors/" + file, "r")
+        
+        t = time.time()
+        df_to_plot['Timestamp'] = df_to_plot['Timestamp'].min()
+
+        gb_df_to_plot = df_to_plot.groupby(['HumanBoneIndex_Axis'])
+        humanboneIndex_name = ""
+        df = pd.DataFrame()
+        for name, group in gb_df_to_plot: 
+            name = name[0].split('_')[0]
+            if humanboneIndex_name == "":
+                humanboneIndex_name = name
+            if humanboneIndex_name != name:
+                df.fillna("0", inplace=True, axis=0)
+                df_matrix = df.pivot_table(index="Timestamp", columns="HumanBoneIndex_Axis", values="Error").sort_values(by=['Timestamp'],ascending=False)
+                plt.figure(figsize=(10, 10))
+                sns.heatmap(df_matrix)
+                plt.savefig(thisdir + "/core/analysis/relative_errors/" + training_type + "/" + algorithm + "/" + subject_ids + "_" + humanboneindex_name + "_" + t + "_relative_errors_heatmap.png", dpi=1200)     
+                plt.clf()
+                humanboneIndex_name = name
+                df = group
+            else:
+                df = pd.concat((df, group), axis=0)
+        df.fillna("0", inplace=True, axis=0)
+        df_matrix = df.pivot_table(index="Timestamp", columns="HumanBoneIndex_Axis", values="Error")
+        plt.figure(figsize=(10, 10))
+        sns.heatmap(df_matrix)
+        plt.savefig(thisdir + "/core/analysis/relative_errors/" + training_type + "/" + algorithm + "/" + subject_ids + "_" + humanboneindex_name + "_" + t + "_relative_errors_heatmap.png")     
+        plt.clf()
+        print("Finished saving heatmaps")
+
+    @staticmethod
     def plot_feedback_result_heatmaps(self, df_to_plot, subject_ids, training_type, algorithm, t):
         thisdir = os.getcwd()
         t = time.time()

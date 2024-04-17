@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPClassifier
 #from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
 
+from core.DataDenoiser import DataDenoiser
 import Config
 from data.DataAccess import DataAccess
 from data.DataManager import DataManager
@@ -91,4 +92,63 @@ class ModelTester:
         plot_df['Timestamp'] = int(time.time())
         self.relative_errors = pd.concat((self.relative_errors, plot_df), axis=0)
      
-    
+    def test_feedback_models_on_df(self, models_for_samples_list, sample_df, sample, result):
+        
+        #plot_df = pd.DataFrame()
+        #plot_df['HumanBoneIndex_Axis'] = suit_data.index
+        thisdir = os.getcwd()
+        #files = [f for f in os.listdir(thisdir + "/core/ml_models/" + training_type + "/best/" + ax + "/") if f in model_for_samples_list]
+        relevant_humanboneindexes = [m[2].split("_")[1] for m in models_for_samples_list]
+        sample_df = sample_df.loc[:, sample_df.columns.str.contains("|".join(relevant_humanboneindexes))] 
+        chosen_idx = np.random.choice(len(sample_df)-1, replace=False, size=60)
+        for x in chosen_idx:
+            print("Sample: " + sample + " Row: " + str(x))
+            row = sample_df.iloc[x] #randomly selects a row
+            testing_df = pd.DataFrame()
+            testing_df['HumanBoneIndex_Axis'] = row.index
+            testing_df['Gyro_x'] = [0]*row.index.size
+            testing_df['Gyro_y'] = [0]*row.index.size
+            testing_df['Gyro_z'] = [0]*row.index.size
+            testing_df['Value'] = row.values
+
+            testing_dfs = np.split(testing_df, np.arange(int(len(row.index)/len(relevant_humanboneindexes)), len(row.index), int(len(row.index)/len(relevant_humanboneindexes))), axis=0)
+        
+            
+            #relative_error = []
+            i = 0
+            for df in testing_dfs: 
+                df = df.reset_index(drop=True)
+                humanboneIndex_name = row.index[i].split('_')[0]
+                i = i+1
+                df['HumanBoneIndex_Axis'] = df.index
+                #newest_model_time = 0
+                #newest_model_path = ""
+                for model_for_sample in models_for_samples_list:
+                    model = load(thisdir + "/core/ml_models/" + model_for_sample[0] + "/best/" + model_for_sample[1] + "/" + model_for_sample[2])
+                    mean_std_df =  model.predict(df.drop(['Value'], axis=1))
+                    df['Mean'] = mean_std_df[:,0]
+                    df['Std'] = mean_std_df[:,1]
+                    # Calculate absolute difference, subtract standard deviation and set all negative values to zero.
+                    # Result: By how much is the standard deviation exceeded, i.e. how big is the error? Within std equals no error.
+                    df['AbsDifference'] = (df['Mean'] - df['Value']).abs()
+                    df['Error'] = df['AbsDifference'] - Config.STD_MULTIPLIER * df['Std'] 
+                    df['FilteredError'] = df['Error'].clip(lower=0)
+                    # Then take all values where deviation from mean was downwards, i.e. actual smaller than mean
+                    # and multiply by -1. No we have positive values for upwards deviation and negative values
+                    # for downwards deviation.
+                    df.loc[df['Value'] < df['Mean']]['FilteredError'] = df.loc[df['Value'] < df['Mean']]['FilteredError'] * (-1)
+
+                    # then make the error relative. Add 0.01 to avoid division by zero
+                    df['RelativeError'] = df['FilteredError'] / (df['Std'] + 0.01)
+                    if model_for_sample[2] in result:
+                        result[model_for_sample[2]].append((model_for_sample[0], model_for_sample[1], sample, x, df['RelativeError'].values))
+                    else:
+                        result[model_for_sample[2]] = [(model_for_sample[0], model_for_sample[1], sample, x, df['RelativeError'].values)]
+                    df = df.drop(['AbsDifference'], axis=1)
+                    df = df.drop(['Error'], axis=1)
+                    df = df.drop(['Mean'], axis=1)
+                    df = df.drop(['Std'], axis=1)
+                    df = df.drop(['FilteredError'], axis=1)
+                    df = df.drop(['RelativeError'], axis=1)
+        return result  
+        

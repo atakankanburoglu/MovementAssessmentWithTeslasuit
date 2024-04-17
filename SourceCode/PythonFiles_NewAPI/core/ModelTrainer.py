@@ -48,17 +48,17 @@ class ModelTrainer:
                 lr = linear_model.LinearRegression()
                 lr.fit(X, Y)
                 print("Dumping LR Model Results for humanboneindex: " + humanboneindex_name)
-                dump(lr, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn9x/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
+                dump(lr, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
             if(algorithm == "RF"):
                 rf = RandomForestRegressor(max_depth=2, random_state=0)
                 rf.fit(X, Y)
                 print("Dumping RF Model Results for humanboneindex: " + humanboneindex_name)
-                dump(rf, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn9x/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
+                dump(rf, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
             if(algorithm == "NN"):
                 nn = MLPRegressor(random_state=0, max_iter=2000)
                 nn.fit(X, Y)
                 print("Dumping NN Model Results for humanboneindex: " + humanboneindex_name)
-                dump(nn, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn9x/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
+                dump(nn, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
             model_creation_dict[humanboneindex_name] = (time.time() - t)/60
         print("Model creation (in min):" + str((time.time() - t)/60))
         return str(int(t)), model_creation_dict

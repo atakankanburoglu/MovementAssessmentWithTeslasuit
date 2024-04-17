@@ -20,6 +20,60 @@ class DataDenoiser:
         #df = df.loc[:,~df.columns.str.contains('6x_w')]
         return df
     
+    @staticmethod
+    def denoise_df_column_for_feedback_model_all_ax(df):
+        df = df.drop(['TrainingType'], axis=1)
+        df = df.drop(['Timestamp'], axis=1)
+        df = df.loc[:,~df.columns.str.startswith('Spine')]
+        df = df.loc[:,~df.columns.str.startswith('Chest')]
+        df = df.loc[:,~df.columns.str.startswith('LeftShoulder')]
+        df = df.loc[:,~df.columns.str.startswith('RightShoulder')]
+        df = df.loc[:,~df.columns.str.contains('Foot')]
+        df = df.loc[:,~df.columns.str.contains('Hand')]
+        df = df.loc[:,~df.columns.str.contains('gyro')]
+        #df = df.loc[:,~df.columns.str.contains('magn')]
+        #df = df.loc[:,~df.columns.str.contains('accelerometer')]
+        #df = df.loc[:,~df.columns.str.contains('Accel')]
+        #df = df.loc[:,~df.columns.str.contains('9x')]
+        #df = df.loc[:,~df.columns.str.contains('6x_w')]
+        return df
+
+    @staticmethod
+    def denoise_df_column_for_feedback_model_no_magn(df):
+        df = df.drop(['TrainingType'], axis=1)
+        df = df.drop(['Timestamp'], axis=1)
+        df = df.loc[:,~df.columns.str.startswith('Spine')]
+        df = df.loc[:,~df.columns.str.startswith('Chest')]
+        df = df.loc[:,~df.columns.str.startswith('LeftShoulder')]
+        df = df.loc[:,~df.columns.str.startswith('RightShoulder')]
+        df = df.loc[:,~df.columns.str.contains('Foot')]
+        df = df.loc[:,~df.columns.str.contains('Hand')]
+        df = df.loc[:,~df.columns.str.contains('gyro')]
+        df = df.loc[:,~df.columns.str.contains('magn')]
+        #df = df.loc[:,~df.columns.str.contains('accelerometer')]
+        #df = df.loc[:,~df.columns.str.contains('Accel')]
+        #df = df.loc[:,~df.columns.str.contains('9x')]
+        #df = df.loc[:,~df.columns.str.contains('6x_w')]
+        return df
+
+    @staticmethod
+    def denoise_df_column_for_feedback_model_nomagn9x(df):
+        df = df.drop(['TrainingType'], axis=1)
+        df = df.drop(['Timestamp'], axis=1)
+        df = df.loc[:,~df.columns.str.startswith('Spine')]
+        df = df.loc[:,~df.columns.str.startswith('Chest')]
+        df = df.loc[:,~df.columns.str.startswith('LeftShoulder')]
+        df = df.loc[:,~df.columns.str.startswith('RightShoulder')]
+        df = df.loc[:,~df.columns.str.contains('Foot')]
+        df = df.loc[:,~df.columns.str.contains('Hand')]
+        df = df.loc[:,~df.columns.str.contains('gyro')]
+        df = df.loc[:,~df.columns.str.contains('magn')]
+        #df = df.loc[:,~df.columns.str.contains('accelerometer')]
+        #df = df.loc[:,~df.columns.str.contains('Accel')]
+        df = df.loc[:,~df.columns.str.contains('9x')]
+        #df = df.loc[:,~df.columns.str.contains('6x_w')]
+        return df
+
     @staticmethod 
     def denoise_df_column_for_exercise_recognition_model(df):
         df = df.drop(['Timestamp'], axis=1)

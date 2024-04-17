@@ -107,29 +107,47 @@ class DataGateway:
         t = time.process_time()
 
     def on_testing_recorded(self, subject_ids, algorithm, recorded_file_name, new_recognition_model):
-        split_recorded_file_name = recorded_file_name.split('_')
-        thisdir = os.getcwd()
-        best_model_score_file = open(thisdir + "/core/analysis/scores/" + split_recorded_file_name[1] + "_scores_table_best_as_entries.txt", "r")
-        model_list = []
-        for line in best_model_score_file:
-            model_list.append(eval(line))
-        test_ids = [t[0] + "_" for t in model_list]
-        recorded_test_files = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv") and model_list in f]
-        for recorded_test_file in recorded_test_files:
-            testing_df = pd.read_csv(thisdir + "/core/samples/" + recorded_file_name)
-            if new_recognition_model == "True":
-                training_data = DataRetriever.get_data_from_csv_for_exercise_recognition()
-                training_data = DataDenoiser.denoise_df_column_for_exercise_recognition_model(training_data)
-                ModelTrainer.train_exercise_recognition_model(training_data)
-            self.modelTester = ModelTester(subject_ids, algorithm, testing_df.columns)
-            t = time.time()
-            rows = 500
-            for i in range(rows):
-                self.on_imu_data_stream(testing_df.loc[i], ApplicationMode.TESTING)
-            print("File tested for (in min):" + str((time.time() - t)/60))    
-            ModelEvaluator.plot_feedback_result_heatmaps(self.modelTester.relative_errors, subject_ids, recorded_file_name.split("_")[1], algorithm, t)
+        testing_df = pd.read_csv(thisdir + "/core/samples/" + recorded_file_name)
+        if new_recognition_model == "True":
+            training_data = DataRetriever.get_data_from_csv_for_exercise_recognition()
+            training_data = DataDenoiser.denoise_df_column_for_exercise_recognition_model(training_data)
+            ModelTrainer.train_exercise_recognition_model(training_data)
+        self.modelTester = ModelTester(subject_ids, algorithm, testing_df.columns)
+        t = time.time()
+        rows = 500
+        for i in range(rows):
+            self.on_imu_data_stream(testing_df.loc[i], ApplicationMode.TESTING)
+        print("File tested for (in min):" + str((time.time() - t)/60))    
+        ModelEvaluator.plot_feedback_result_heatmaps(self.modelTester.relative_errors, subject_ids, recorded_file_name.split("_")[1], algorithm, t)
         #self.modelTester.plot_feedback_result_barcharts(self.modelTester.relative_errors, recorded_file_name, rows)
-        #return self.modelTester.relative_errors
+        return self.modelTester.relative_errors
+
+    def on_testing_recorded_all(self):
+        thisdir = os.getcwd()
+        model_list = []
+        training_type_list = ["PLANKHOLD", "FULLSQUAT", "SIDEPLANKRIGHT", "SIDEPLANKLEFT"]
+        for training_type in training_type_list:
+            axis_list = ["all_ax", "no_magn_", "no_magn9x"]
+            for ax in axis_list:
+                model_list.extend([(training_type, ax, f) for f in os.listdir(thisdir + "/core/ml_models/" + training_type + "/best/" + ax + "/") if f.startswith("1-14")])
+        id_list = list(dict.fromkeys([(t[2].split("_")[0]).split("-")[2] + "_" for t in model_list]))
+        for id in id_list:
+            sample_list = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv") and id in f and training_type in f][:2]
+            models_for_samples_list = [m for m in model_list if id in m[2]]
+            for sample in sample_list:
+                result = {}
+                sample_df = pd.read_csv(thisdir + "/core/samples/" + sample)
+                self.modelTester = ModelTester(id, "NN", sample_df.columns)
+                t = time.time()
+                result = self.modelTester.test_feedback_models_on_df(models_for_samples_list, sample_df, sample, result)
+                print("File tested for (in min):" + str((time.time() - t)/60))    
+                f = open(thisdir + "/core/analysis/relative_errors/" + sample + "_best_models.txt", "w") 
+                f.write(str(result) + "\n")
+                f.write("Time taken: " + str((time.time() - t)/60))
+                f.close()
+                        #ModelEvaluator.plot_feedback_result_heatmaps(self.modelTester.relative_errors, subject_ids, training_type, algorithm, t)
+        #self.modelTester.plot_feedback_result_barcharts(self.modelTester.relative_errors, recorded_file_name, rows)
+        return self.modelTester.relative_errors
 
     def get_recorded_data(self):
         return self.dataRecorder.dataToDataframe()
