@@ -437,9 +437,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 956120707}
         m_TargetAssemblyTypeName: TsCamera, Assembly-CSharp
-        m_MethodName: RotateAround45Left
+        m_MethodName: RotateAround45Right
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4301,7 +4301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &391740704
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4321,10 +4321,10 @@ RectTransform:
   m_Father: {fileID: 1505161625}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -3, y: -245}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -100, y: -391}
+  m_SizeDelta: {x: 870, y: 384}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &395276244
 GameObject:
@@ -8182,7 +8182,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 956120707}
         m_TargetAssemblyTypeName: TsCamera, Assembly-CSharp
         m_MethodName: ZoomIn
         m_Mode: 1
@@ -8539,9 +8539,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 956120707}
         m_TargetAssemblyTypeName: TsCamera, Assembly-CSharp
-        m_MethodName: RotateAround45Right
+        m_MethodName: RotateAround45Left
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9444,7 +9444,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 956120707}
         m_TargetAssemblyTypeName: TsCamera, Assembly-CSharp
         m_MethodName: ZoomOut
         m_Mode: 1
@@ -10196,7 +10196,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 956120707}
         m_TargetAssemblyTypeName: TsCamera, Assembly-CSharp
         m_MethodName: RotateAround180
         m_Mode: 1
@@ -11297,6 +11297,7 @@ GameObject:
   - component: {fileID: 956120706}
   - component: {fileID: 956120705}
   - component: {fileID: 956120708}
+  - component: {fileID: 956120707}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -11355,6 +11356,19 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &956120707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 956120704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 670ef871399c9a54784c7d29741ff681, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Ethan: {fileID: 1324782057}
 --- !u!223 &956120708
 Canvas:
   m_ObjectHideFlags: 0
@@ -11383,13 +11397,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 956120704}
-  m_LocalRotation: {x: 0, y: 0.9848078, z: -0.17364816, w: 0}
+  m_LocalRotation: {x: 0, y: 0.9945219, z: -0.10452846, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 12
-  m_LocalEulerAnglesHint: {x: 20, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 12, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0.9999999}

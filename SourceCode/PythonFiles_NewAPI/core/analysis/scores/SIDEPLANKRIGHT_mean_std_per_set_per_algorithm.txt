@@ -1,0 +1,9 @@
+all_axes.txt_ & LR & -0.03 & 0.13\\ 
+all_axes.txt_ & NN & 0.63 & 0.34\\ 
+all_axes.txt_ & RF & 0.45 & 0.27\\ 
+no_magn9x_ & LR & -0.12 & 0.63\\ 
+no_magn9x_ & NN & 0.31 & 0.68\\ 
+no_magn9x_ & RF & 0.09 & 0.6\\ 
+no_magn_ & LR & -0.07 & 0.59\\ 
+no_magn_ & NN & 0.37 & 0.58\\ 
+no_magn_ & RF & 0.14 & 0.54\\ 

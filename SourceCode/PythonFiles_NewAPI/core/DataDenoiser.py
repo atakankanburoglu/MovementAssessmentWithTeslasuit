@@ -22,8 +22,6 @@ class DataDenoiser:
     
     @staticmethod
     def denoise_df_column_for_feedback_model_all_ax(df):
-        df = df.drop(['TrainingType'], axis=1)
-        df = df.drop(['Timestamp'], axis=1)
         df = df.loc[:,~df.columns.str.startswith('Spine')]
         df = df.loc[:,~df.columns.str.startswith('Chest')]
         df = df.loc[:,~df.columns.str.startswith('LeftShoulder')]

@@ -1,0 +1,9 @@
+all_axis_ & LR & -0.06 & 0.25\\ 
+all_axis_ & NN & 0.47 & 1.03\\ 
+all_axis_ & RF & 0.27 & 0.9\\ 
+no_magn9x_ & LR & -0.78 & 1.64\\ 
+no_magn9x_ & NN & -0.39 & 1.58\\ 
+no_magn9x_ & RF & -0.66 & 1.84\\ 
+no_magn_ & LR & -0.35 & 1.09\\ 
+no_magn_ & NN & -0.06 & 1.12\\ 
+no_magn_ & RF & -0.2 & 1.27\\ 

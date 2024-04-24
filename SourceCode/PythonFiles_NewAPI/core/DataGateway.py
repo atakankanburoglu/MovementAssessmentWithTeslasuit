@@ -4,6 +4,7 @@ import csv
 import pandas as pd
 import os
 import Config
+import ast
 from PerformanceAnalyzer import PerformanceAnalyzer
 from core.DataRecorder import DataRecorder
 from core.DataRetriever import DataRetriever
@@ -125,26 +126,34 @@ class DataGateway:
     def on_testing_recorded_all(self):
         thisdir = os.getcwd()
         model_list = []
-        training_type_list = ["PLANKHOLD", "FULLSQUAT", "SIDEPLANKRIGHT", "SIDEPLANKLEFT"]
+        training_type_list = ["FULLSQUAT", "SIDEPLANKRIGHT", "SIDEPLANKLEFT"]#
+        #training_type  = "PLANKHOLD"
         for training_type in training_type_list:
+            file_time = open(thisdir + "/core/analysis/relative_errors/" + training_type + "/new/" + "Best_models_time_taken.txt", "w")          
             axis_list = ["all_ax", "no_magn_", "no_magn9x"]
+            file_models = open(thisdir + "/core/analysis/scores/" + training_type + "_best_performing_models_per_id_per_set.txt", "r")
+            model_list = ast.literal_eval(file_models.read())
+            file_models.close()
+            id_list = list(dict.fromkeys([t[0] for t in model_list]))
+            time_taken = []
             for ax in axis_list:
-                model_list.extend([(training_type, ax, f) for f in os.listdir(thisdir + "/core/ml_models/" + training_type + "/best/" + ax + "/") if f.startswith("1-14")])
-        id_list = list(dict.fromkeys([(t[2].split("_")[0]).split("-")[2] + "_" for t in model_list]))
-        for id in id_list:
-            sample_list = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv") and id in f and training_type in f][:2]
-            models_for_samples_list = [m for m in model_list if id in m[2]]
-            for sample in sample_list:
-                result = {}
-                sample_df = pd.read_csv(thisdir + "/core/samples/" + sample)
-                self.modelTester = ModelTester(id, "NN", sample_df.columns)
-                t = time.time()
-                result = self.modelTester.test_feedback_models_on_df(models_for_samples_list, sample_df, sample, result)
-                print("File tested for (in min):" + str((time.time() - t)/60))    
-                f = open(thisdir + "/core/analysis/relative_errors/" + sample + "_best_models.txt", "w") 
-                f.write(str(result) + "\n")
-                f.write("Time taken: " + str((time.time() - t)/60))
-                f.close()
+                for id in id_list:
+                    sample_list = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv") and id + "_" in f and training_type in f]
+                    models_for_samples_list = [m for m in model_list if id == m[0] and ax in m[4]]
+                    for sample in sample_list:
+                        sample_name = sample.split("_")[0] + "_" + sample.split("_")[2] + "_" + sample.split("_")[3]
+                        result = {}
+                        sample_df = pd.read_csv(thisdir + "/core/samples/" + sample)
+                        self.modelTester = ModelTester(id, "NN", sample_df.columns)
+                        t = time.time()
+                        result = self.modelTester.test_feedback_models_on_df(models_for_samples_list, training_type, sample_df, sample_name, result)
+                        print("File tested for (in min):" + str((time.time() - t)/60))    
+                        time_taken.append((sample_name, (time.time() - t)/60, len(models_for_samples_list)))
+                        file_error = open(thisdir + "/core/analysis/relative_errors/" + training_type + "/new/" + ax + "_" + sample + "_best_models_new.txt", "w") 
+                        file_error.write(str(result) + ",")
+                        file_error.close()
+            file_time.write(str(time_taken) + "\n")
+            file_time.close()
                         #ModelEvaluator.plot_feedback_result_heatmaps(self.modelTester.relative_errors, subject_ids, training_type, algorithm, t)
         #self.modelTester.plot_feedback_result_barcharts(self.modelTester.relative_errors, recorded_file_name, rows)
         return self.modelTester.relative_errors
