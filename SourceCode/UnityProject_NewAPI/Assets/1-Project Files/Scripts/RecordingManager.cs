@@ -10,7 +10,7 @@ public class RecordingManager : MonoBehaviour
 {
     //Sample Setting Panel
     [SerializeField]
-    private Dropdown trainingTypeDropDownSample;
+    private Dropdown exerciseTypeDropDownSample;
     [SerializeField]
     private TMP_InputField subjectIDInput;
     [SerializeField]
@@ -51,7 +51,7 @@ public class RecordingManager : MonoBehaviour
         path = Application.dataPath + "/JsonAttempts/";
         dataGateway = FindObjectOfType<DataGateway>();
 
-        FillTrainingTypeDropDownSample();
+        FillExerciseTypeDropDownSample();
     }
 
     void Update()
@@ -77,10 +77,9 @@ public class RecordingManager : MonoBehaviour
 
                 if (tsHumanAnimator.ImuData.Count > 0)
                 {
-                    //Do this for Model Training
-                    TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
-                    ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, timeInterval);
-                    dataGateway.PythonClient.PushSuitData(imuDataObject);
+                    ExerciseType exerciseType = (ExerciseType)Enum.Parse(typeof(ExerciseType), exerciseTypeDropDownSample.options[exerciseTypeDropDownSample.value].text);
+                    ImuDataObject imuDataObject = new ImuDataObject(exerciseType, tsHumanAnimator.ImuData, timeInterval);
+                    dataGateway.PushSuitData(ApplicationMode.Recording, imuDataObject);
                 }
             }
         }
@@ -91,11 +90,11 @@ public class RecordingManager : MonoBehaviour
     }
 
 
-    void FillTrainingTypeDropDownSample()
+    void FillExerciseTypeDropDownSample()
     {
-        string[] names = Enum.GetNames(typeof(TrainingType));
-        trainingTypeDropDownSample.ClearOptions();
-        trainingTypeDropDownSample.AddOptions(new List<string>(names));
+        string[] names = Enum.GetNames(typeof(ExerciseType));
+        exerciseTypeDropDownSample.ClearOptions();
+        exerciseTypeDropDownSample.AddOptions(new List<string>(names));
     }
 
     public void CreateNewSubject()
@@ -105,12 +104,12 @@ public class RecordingManager : MonoBehaviour
             Debug.LogError("Please enter a name for this subject");
             return;
         }
-        var trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownSample.options[trainingTypeDropDownSample.value].text);
-        infoToJSon = new ReplayObject() { subjectName = subjectIDInput.text, trainingType = trainingType};
+        var exerciseType = (ExerciseType)Enum.Parse(typeof(ExerciseType), exerciseTypeDropDownSample.options[exerciseTypeDropDownSample.value].text);
+        infoToJSon = new ReplayObject() { subjectName = subjectIDInput.text, exerciseType = exerciseType};
         recordingPanel.SetActive(true);
         sampleSettingPanel.SetActive(false);
 
-        dataGateway.PythonClient.StartTrainingMode(subjectIDInput.text, trainingType);
+        dataGateway.StartRecording(); 
         Debug.Log("object created");
     }
     public void StartRecording()
@@ -134,18 +133,20 @@ public class RecordingManager : MonoBehaviour
             SampleType sampleType = (SampleType)Enum.Parse(typeof(SampleType), sampleTypeDropDown.options[sampleTypeDropDown.value].text);
 
             //write string to file
-            System.IO.File.WriteAllText(string.Concat(path, infoToJSon.subjectName, "_", infoToJSon.trainingType, "_", sampleType, ".json"), json);
+            System.IO.File.WriteAllText(string.Concat(path, infoToJSon.subjectName, "_", infoToJSon.exerciseType, "_", sampleType, ".json"), json);
             infoToJSon = null;
 
-            dataGateway.PythonClient.StopTrainingMode(sampleType);
+            ExerciseType exerciseType = (ExerciseType)Enum.Parse(typeof(ExerciseType), exerciseTypeDropDownSample.options[exerciseTypeDropDownSample.value].text);
+            SampleDataObject sampleDataObject = new SampleDataObject(subjectIDInput.text, exerciseType, sampleType);
+            dataGateway.SaveRecording(sampleDataObject);
         }
-        FillTrainingTypeDropDownSample();
+        FillExerciseTypeDropDownSample();
         subjectIDInput.text = null; 
     }
 
     public void Cancel()
     {
-        FillTrainingTypeDropDownSample();
+        FillExerciseTypeDropDownSample();
         subjectIDInput.text = null;
         recordingPanel.SetActive(false);
         sampleSettingPanel.SetActive(true);

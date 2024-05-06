@@ -15,20 +15,20 @@ public class TestingManager : MonoBehaviour
     [SerializeField]
     private Dropdown algorithmDropDown;
     [SerializeField]
-    private Toggle newRecognitionModelRealTimeToggle;
-    [SerializeField]
     private GameObject realTimeSettingPanel;
+    [SerializeField]
+    private TMP_InputField measurementSetsInput;
 
     //Recorded Testing Setting Panel
     [SerializeField]
     private TMP_InputField subjectIDsRecordedInput;
     [SerializeField]
+    private TMP_InputField measurementSetsRecordedInput;
+    [SerializeField]
     private Dropdown algorithmRecordedDropDown;
     [SerializeField]
     private TMP_Dropdown recordedExercisesDropDown;
     private int recordedExercisesDropDownOption;
-    [SerializeField]
-    private Toggle newRecognitionModelRecordedToggle;
     [SerializeField]
     private GameObject recordedSettingPanel;
 
@@ -80,7 +80,7 @@ public class TestingManager : MonoBehaviour
 
     public TsHumanAnimator tsHumanAnimator;
 
-    private TrainingType trainingType;
+    private ExerciseType exerciseType;
 
     List<string> recordedExercisesList = new List<string>();
 
@@ -92,8 +92,6 @@ public class TestingManager : MonoBehaviour
     void Start()
     {
         FillAlgorithmDropDownModel();
-        GetRecordedExercisesForDropdown();
-
     }
 
     void Update()
@@ -105,13 +103,17 @@ public class TestingManager : MonoBehaviour
                 timerCountdown.gameObject.SetActive(true);
                 timerCountdown.text = (timeInterval).ToString("0");
 
-                ImuDataObject imuDataObject = new ImuDataObject(trainingType, tsHumanAnimator.ImuData, timeInterval);
-                dataGateway.PythonClient.PushSuitData(imuDataObject);
+                ImuDataObject imuDataObject = new ImuDataObject(exerciseType, tsHumanAnimator.ImuData, timeInterval);
+                dataGateway.PushSuitData(ApplicationMode.Testing, imuDataObject);
             }
         }
         if (recordedExercisesList.Count != 0)
         {
             FillRecordedExercisesDropDownModel();
+        }
+        else
+        {
+            dataGateway.GetRecordedExercises();
         }
         if (timeInterval < 0)
         {
@@ -120,26 +122,29 @@ public class TestingManager : MonoBehaviour
         recordedExercisesDropDown.value = recordedExercisesDropDownOption;
     }
 
-    public void FillRecognizedExcerciseOutputInput(TrainingType trainingType)
+    public void FillRecognizedExcerciseOutputInput(ExerciseType exerciseType)
     {
-        this.trainingType = trainingType;
-        recognizedExerciseOutput.text = Enum.GetName(typeof(TrainingType), trainingType);
+        this.exerciseType = exerciseType;
+        recognizedExerciseOutput.text = Enum.GetName(typeof(ExerciseType), exerciseType);
     }
 
 
     void FillAlgorithmDropDownModel()
     {
-        string[] algorithms = Enum.GetNames(typeof(Algorithm));
+        List<String> algorithms = new List<String>(Enum.GetNames(typeof(Algorithm)));
+        int index = algorithms.IndexOf("SVM");
+        algorithms.RemoveAt(index);
         algorithmDropDown.ClearOptions();
         algorithmDropDown.AddOptions(new List<string>(algorithms));
         algorithmRecordedDropDown.ClearOptions();
         algorithmRecordedDropDown.AddOptions(new List<string>(algorithms));
     }
 
-    public void ChooseAlgorithm()
+    public void StartRealTimeTestingMode()
     {
-        String algorithm = algorithmDropDown.options[algorithmDropDown.value].text;
-        dataGateway.PythonClient.StartTestingMode(subjectIDsInput.text, algorithm, newRecognitionModelRealTimeToggle.isOn);
+        Algorithm algorithm = (Algorithm)Enum.Parse(typeof(Algorithm), algorithmDropDown.options[algorithmDropDown.value].text);
+        ModelDataObject modelDataObject = new ModelDataObject(subjectIDsInput.text, ExerciseType.PLANKHOLD, algorithm, measurementSetsInput.text);
+        dataGateway.StartRealTimeTestingMode(modelDataObject);
     }
     void FillRecordedExercisesDropDownModel()
     {
@@ -154,11 +159,6 @@ public class TestingManager : MonoBehaviour
         recordedExercisesDropDown.AddOptions(optionList);
     }
 
-    public void GetRecordedExercisesForDropdown()
-    {
-        dataGateway.PythonClient.GetRecordedExercises();
-    }
-
     public void SetRecordedExercisesForDropdown(string[] recordedExercises)
     {
         this.recordedExercisesList = new List<string>(recordedExercises);
@@ -168,11 +168,12 @@ public class TestingManager : MonoBehaviour
     {
         recordedExercisesDropDownOption = recordedExercisesDropDown.value;
     }
-    public void ChooseRecordedExercise()
+    public void StartRecordedTestingMode()
     {
-        String algorithm = algorithmRecordedDropDown.options[algorithmRecordedDropDown.value].text;
-        String exercise = recordedExercisesDropDown.options[recordedExercisesDropDown.value].text;
-        dataGateway.PythonClient.StartRecordedTestingMode(subjectIDsRecordedInput.text, algorithm, exercise, newRecognitionModelRecordedToggle.isOn);
+        Algorithm algorithm = (Algorithm)Enum.Parse(typeof(Algorithm), algorithmRecordedDropDown.options[algorithmRecordedDropDown.value].text);
+        ModelDataObject modelDataObject = new ModelDataObject(subjectIDsRecordedInput.text, ExerciseType.PLANKHOLD, algorithm, measurementSetsRecordedInput.text);
+        String recordedExercise = recordedExercisesDropDown.options[recordedExercisesDropDown.value].text;
+        dataGateway.StartRecordedTestingMode(modelDataObject, recordedExercise);
     }
 
     public void GiveFeedback(Dictionary<TsHumanBoneIndex, int> feedback)
@@ -245,7 +246,6 @@ public class TestingManager : MonoBehaviour
     }
     public void StopFeedback()
     {
-        dataGateway.PythonClient.StopTestingMode();
         running = false;
 
         timerCountdown.gameObject.SetActive(false);

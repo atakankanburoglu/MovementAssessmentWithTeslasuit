@@ -128,7 +128,7 @@ public class TsReplaySaver : MonoBehaviour
     [SerializeField]
     private Dropdown replayDropDown;
     [SerializeField]
-    private Dropdown trainingTypeDropDown;
+    private Dropdown exerciseTypeDropDown;
     [SerializeField] 
     private Button replayButton;
     [SerializeField]
@@ -209,15 +209,15 @@ public class TsReplaySaver : MonoBehaviour
     }
     void FillTrainingDropDown()
     {
-        string[] names = Enum.GetNames(typeof(TrainingType));
-        trainingTypeDropDown.ClearOptions();
-        trainingTypeDropDown.AddOptions(new List<string>(names));
+        string[] names = Enum.GetNames(typeof(ExerciseType));
+        exerciseTypeDropDown.ClearOptions();
+        exerciseTypeDropDown.AddOptions(new List<string>(names));
     }
 
     public void CreateNewSubject()
     {
         if (inputName.text == string.Empty) { Debug.LogError("Please enter a name for this subject"); return; }
-        infoToJSon = new ReplayObject() { subjectName = inputName.text, trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDown.options[trainingTypeDropDown.value].text) };
+        infoToJSon = new ReplayObject() { subjectName = inputName.text, exerciseType = (ExerciseType)Enum.Parse(typeof(ExerciseType), exerciseTypeDropDown.options[exerciseTypeDropDown.value].text) };
         startRecordingField.SetActive(true);
         createSubjectField.SetActive(false);
 
@@ -243,7 +243,7 @@ public class TsReplaySaver : MonoBehaviour
             string json = JsonConvert.SerializeObject(infoToJSon.replayInfo.ToArray(),Formatting.Indented);
 
             //write string to file
-            System.IO.File.WriteAllText(string.Concat(path, $"{infoToJSon.subjectName}",underScore, $"{ infoToJSon.trainingType.ToString() }", ".json"), json);
+            System.IO.File.WriteAllText(string.Concat(path, $"{infoToJSon.subjectName}",underScore, $"{ infoToJSon.exerciseType.ToString() }", ".json"), json);
             infoToJSon = null;
         }
         FillReplayDropDown();

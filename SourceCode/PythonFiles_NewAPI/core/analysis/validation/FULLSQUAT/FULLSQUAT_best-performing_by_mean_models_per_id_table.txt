@@ -1,0 +1,50 @@
+\textbf{\ac{IMU} Measurement Set} & \textbf{Algorithm} & \textbf{$t_{gyro}$} & \textbf{ID} & \textbf{Mean of Scores} \\\hline \midrule 
+ & NN & 10 & 1 & 0.66\\ 
+ & NN & 10 & 10 & -0.03\\ 
+ & NN & 10 & 14 & 0.49\\ 
+ & NN & 5 & 7 & 0.62\\ 
+ & NN & 5 & 8 & 0.62\\ 
+ & RF & 1 & 9 & 0.29\\ 
+ &  &  &  & 0.44\\\hline \hline
+6x & NN & 10 & 1 & 0.64\\ 
+6x & RF & 10 & 10 & -0.14\\ 
+6x & NN & 10 & 14 & 0.38\\ 
+6x & NN & 5 & 7 & 0.57\\ 
+6x & NN & 5 & 8 & 0.59\\ 
+6x & RF & 1 & 9 & 0.19\\ 
+6x &  &  &  & 0.372\\\hline \hline
+9x & NN & 10 & 1 & 0.63\\ 
+9x & RF & 10 & 10 & -0.14\\ 
+9x & NN & 10 & 14 & 0.39\\ 
+9x & NN & 5 & 7 & 0.57\\ 
+9x & NN & 5 & 8 & 0.59\\ 
+9x & RF & 1 & 9 & 0.18\\ 
+9x &  &  &  & 0.371\\\hline \hline
+Accel & NN & 5 & 1 & 0.65\\ 
+Accel & RF & 1 & 10 & 0.04\\ 
+Accel & RF & 10 & 14 & 0.52\\ 
+Accel & RF & 1 & 7 & 0.61\\ 
+Accel & RF & 1 & 8 & 0.64\\ 
+Accel & RF & 1 & 9 & 0.39\\ 
+Accel &  &  &  & 0.473\\\hline \hline
+accel & NN & 5 & 1 & 0.64\\ 
+accel & RF & 1 & 10 & 0.04\\ 
+accel & RF & 10 & 14 & 0.52\\ 
+accel & RF & 1 & 7 & 0.61\\ 
+accel & NN & 5 & 8 & 0.66\\ 
+accel & RF & 1 & 9 & 0.38\\ 
+accel &  &  &  & 0.476\\\hline \hline
+accel-Accel & NN & 10 & 1 & 0.66\\ 
+accel-Accel & RF & 10 & 10 & 0.06\\ 
+accel-Accel & RF & 10 & 14 & 0.54\\ 
+accel-Accel & RF & 1 & 7 & 0.64\\ 
+accel-Accel & NN & 5 & 8 & 0.69\\ 
+accel-Accel & RF & 1 & 9 & 0.28\\ 
+accel-Accel &  &  &  & 0.478\\\hline \hline
+magn & RF & 1 & 1 & 0.44\\ 
+magn & RF & 1 & 10 & -1.11\\ 
+magn & RF & 1 & 14 & 0.3\\ 
+magn & NN & 10 & 7 & 0.03\\ 
+magn & NN & 5 & 8 & 0.6\\ 
+magn & NN & 5 & 9 & 0.56\\ 
+magn &  &  &  & 0.137\\\hline \hline

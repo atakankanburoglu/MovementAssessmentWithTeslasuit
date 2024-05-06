@@ -8,20 +8,19 @@ from data.DataAccess import DataAccess
 import csv
 
 class DataRecorder:
-    def __init__(self, subjectId, trainingType):
-        self.subjectId = subjectId
-        self.trainingType = trainingType
+    def __init__(self, header):
+        self.header = header
         self.recordedData = []
         self.recordedSegments = []
-        #self.plotter = Plotter()
 
     def log_data(self, suit_data):
         self.recordedData.append(suit_data)
 
-    def save_data_to_csv(self, sampleType):
+    def save_data_to_csv(self, sample_data):
         t = time.time()
-        with open("core/samples/" + self.subjectId + '_' + self.trainingType +'_' + sampleType +'_' + str(int(t)) + '.csv', 'w', newline='') as file:
+        with open("core/samples/" + sample_data.subjectId + '_' + sample_data.trainingType +'_' + sample_data.sampleType +'_' + str(int(t)) + '.csv', 'w', newline='') as file:
             writer = csv.writer(file)
+            writer.writerow(header)
             for row in self.recordedData:
                 writer.writerow(row)
 

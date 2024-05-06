@@ -1,0 +1,85 @@
+\textbf{\ac{IMU} Measurement Set} & \textbf{Algorithm} & \textbf{$t_{gyro}$} & \textbf{ID} & \textbf{Mean of Scores} \\\hline \midrule 
+ & NN & 5 & 1 & 0.7\\ 
+ & NN & 5 & 10 & 0.58\\ 
+ & NN & 5 & 14 & 0.52\\ 
+ & NN & 10 & 7 & 0.49\\ 
+ & NN & 10 & 8 & 0.2\\ 
+ & NN & 1 & 9 & 0.49\\ 
+ &  &  &  & 0.497\\\hline \hline
+6x & NN & 5 & 1 & 0.68\\ 
+6x & NN & 10 & 10 & 0.54\\ 
+6x & NN & 1 & 14 & 0.53\\ 
+6x & NN & 1 & 7 & 0.32\\ 
+6x & NN & 1 & 8 & 0.09\\ 
+6x & NN & 1 & 9 & 0.6\\ 
+6x &  &  &  & 0.459\\\hline \hline
+6x-9x & NN & 1 & 1 & 0.28\\ 
+6x-9x & NN & 1 & 10 & 0.39\\ 
+6x-9x & LR & 1 & 14 & 0.07\\ 
+6x-9x & LR & 1 & 7 & -0.83\\ 
+6x-9x & LR & 1 & 8 & -0.13\\ 
+6x-9x & RF & 1 & 9 & 0.31\\ 
+6x-9x &  &  &  & 0.013\\\hline \hline
+6x-Accel & NN & 1 & 1 & 0.64\\ 
+6x-Accel & NN & 1 & 10 & 0.47\\ 
+6x-Accel & NN & 1 & 14 & 0.52\\ 
+6x-Accel & RF & 1 & 7 & 0.28\\ 
+6x-Accel & RF & 1 & 8 & 0.09\\ 
+6x-Accel & NN & 1 & 9 & 0.61\\ 
+6x-Accel &  &  &  & 0.436\\\hline \hline
+6x-accel & NN & 1 & 1 & 0.62\\ 
+6x-accel & NN & 1 & 10 & 0.47\\ 
+6x-accel & NN & 1 & 14 & 0.52\\ 
+6x-accel & RF & 1 & 7 & 0.28\\ 
+6x-accel & RF & 1 & 8 & 0.09\\ 
+6x-accel & NN & 1 & 9 & 0.55\\ 
+6x-accel &  &  &  & 0.423\\\hline \hline
+9x & NN & 5 & 1 & 0.67\\ 
+9x & NN & 10 & 10 & 0.52\\ 
+9x & NN & 1 & 14 & 0.58\\ 
+9x & NN & 5 & 7 & 0.31\\ 
+9x & NN & 1 & 8 & 0.15\\ 
+9x & NN & 1 & 9 & 0.6\\ 
+9x &  &  &  & 0.471\\\hline \hline
+9x-Accel & NN & 1 & 1 & 0.63\\ 
+9x-Accel & NN & 1 & 10 & 0.47\\ 
+9x-Accel & NN & 1 & 14 & 0.53\\ 
+9x-Accel & RF & 1 & 7 & 0.28\\ 
+9x-Accel & RF & 1 & 8 & 0.14\\ 
+9x-Accel & NN & 1 & 9 & 0.55\\ 
+9x-Accel &  &  &  & 0.433\\\hline \hline
+9x-accel & NN & 1 & 1 & 0.62\\ 
+9x-accel & NN & 1 & 10 & 0.49\\ 
+9x-accel & NN & 1 & 14 & 0.52\\ 
+9x-accel & RF & 1 & 7 & 0.28\\ 
+9x-accel & RF & 1 & 8 & 0.14\\ 
+9x-accel & NN & 1 & 9 & 0.58\\ 
+9x-accel &  &  &  & 0.437\\\hline \hline
+Accel & NN & 10 & 1 & 0.73\\ 
+Accel & NN & 5 & 10 & 0.54\\ 
+Accel & RF & 1 & 14 & 0.58\\ 
+Accel & RF & 1 & 7 & 0.47\\ 
+Accel & NN & 1 & 8 & 0.27\\ 
+Accel & RF & 1 & 9 & 0.64\\ 
+Accel &  &  &  & 0.539\\\hline \hline
+accel & NN & 10 & 1 & 0.73\\ 
+accel & NN & 5 & 10 & 0.55\\ 
+accel & RF & 1 & 14 & 0.58\\ 
+accel & NN & 10 & 7 & 0.48\\ 
+accel & NN & 1 & 8 & 0.24\\ 
+accel & RF & 1 & 9 & 0.65\\ 
+accel &  &  &  & 0.538\\\hline \hline
+accel-Accel & RF & 1 & 1 & 0.71\\ 
+accel-Accel & RF & 1 & 10 & 0.61\\ 
+accel-Accel & RF & 1 & 14 & 0.64\\ 
+accel-Accel & RF & 1 & 7 & 0.55\\ 
+accel-Accel & RF & 1 & 8 & 0.34\\ 
+accel-Accel & RF & 1 & 9 & 0.71\\ 
+accel-Accel &  &  &  & 0.595\\\hline \hline
+magn & NN & 10 & 1 & 0.61\\ 
+magn & RF & 1 & 10 & -0.92\\ 
+magn & RF & 1 & 14 & 0.6\\ 
+magn & NN & 10 & 7 & 0.57\\ 
+magn & RF & 1 & 8 & -0.65\\ 
+magn & NN & 5 & 9 & 0.64\\ 
+magn &  &  &  & 0.142\\\hline \hline

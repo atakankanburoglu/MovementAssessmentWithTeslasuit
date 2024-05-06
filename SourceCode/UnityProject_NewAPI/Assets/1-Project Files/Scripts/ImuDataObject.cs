@@ -9,15 +9,19 @@ using TsSDK;
 [Serializable]
 public class ImuDataObject
 {
-    public TrainingType trainingType;
+    public ExerciseType exerciseType;
     public Dictionary<TsHumanBoneIndex, TsImuSensorData> imuData;
     public double timestamp;
 
-    public ImuDataObject(TrainingType trainingType, Dictionary<TsHumanBoneIndex, TsImuSensorData> imuData, double timestamp)
+    public ImuDataObject(ExerciseType exerciseType, Dictionary<TsHumanBoneIndex, TsImuSensorData> imuData, double timestamp)
     {
-        this.trainingType = trainingType;
+        this.exerciseType = exerciseType;
         this.imuData = imuData;
         this.timestamp = timestamp;
+    }
+
+    public ImuDataObject()
+    {
     }
 
     /**
@@ -27,7 +31,7 @@ public class ImuDataObject
     {
         StringBuilder sb = new StringBuilder();
         sb.Append(timestamp.ToString(CultureInfo.InvariantCulture)).Append(seperator);
-        sb.Append(this.trainingType).Append(seperator);
+        sb.Append(this.exerciseType).Append(seperator);
 
         foreach (var boneIndex in TsHumanBones.SuitBones)
         {
@@ -72,7 +76,7 @@ public class ImuDataObject
     {
         StringBuilder sb = new StringBuilder();
         sb.Append("Timestamp").Append(seperator);
-        sb.Append("TrainingType").Append(seperator);
+        sb.Append("ExerciseType").Append(seperator);
 
         foreach (var boneIndex in TsHumanBones.SuitBones)
         {

@@ -2,5 +2,7 @@ public enum Algorithm
 {
     LR,
     RF,
-    NN
+    NN, 
+    ALL,
+    SVM
 }

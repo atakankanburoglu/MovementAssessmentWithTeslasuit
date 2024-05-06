@@ -25,10 +25,9 @@ class ModelTrainer:
     @staticmethod
     def train_exercise_recognition_model(training_data):
         print("Creating Excercise Recognition Model...")
-        y = training_data['TrainingType'].values
-        X = training_data.drop(['TrainingType'], axis=1)
+        y = training_data['ExerciseType'].values
+        X = training_data.drop(['ExerciseType'], axis=1)
         X.fillna("0", inplace=True, axis=1)
-        #print("Building SVM Model with ", len(y), " data points.")
         svc = svm.SVC()
         svc.fit(X, y)
         thisdir = os.getcwd()
@@ -36,29 +35,28 @@ class ModelTrainer:
         dump(svc, thisdir + "/core/ml_models/exercise_recognition_svm_model")
 
     @staticmethod
-    def train_feedback_model(training_dict, subject_ids, training_type, algorithm):
+    def train_feedback_model(training_dict, model_data):
         thisdir = os.getcwd()
         t = time.time()
-        model_creation_dict = {}
         for humanboneindex_name, training_df in training_dict.items():
+            model_name = model_data.exercise_type + "/" + model_data.algorithm + "/" + model_data.subject_ids + "_" + "-".join(model_data.measurement_sets) + "_" + str(model_data.t_gyro) + "_" + humanboneindex_name + "_" + model_data.timestamp
             X = training_df.loc[:, 'HumanBoneIndex_Axis':'Gyro_z']
             X.fillna("0", inplace=True, axis=1)
             Y = training_df.loc[:, 'Mean':'Std']
-            if(algorithm == "LR"):
+            if(model_data.algorithm == "LR"):
                 lr = linear_model.LinearRegression()
                 lr.fit(X, Y)
                 print("Dumping LR Model Results for humanboneindex: " + humanboneindex_name)
-                dump(lr, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
-            if(algorithm == "RF"):
+                dump(lr, thisdir + "/core/ml_models/" + model_name)
+            if(model_data.algorithm == "RF"):
                 rf = RandomForestRegressor(max_depth=2, random_state=0)
                 rf.fit(X, Y)
                 print("Dumping RF Model Results for humanboneindex: " + humanboneindex_name)
-                dump(rf, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
-            if(algorithm == "NN"):
-                nn = MLPRegressor(random_state=0, max_iter=2000)
+                dump(rf, thisdir + "/core/ml_models/" + model_name)
+            if(model_data.algorithm == "NN"):
+                nn = MLPRegressor(random_state=0, max_iter=4000)
                 nn.fit(X, Y)
                 print("Dumping NN Model Results for humanboneindex: " + humanboneindex_name)
-                dump(nn, thisdir + "/core/ml_models/" + training_type + "/" + algorithm + "/no_magn/" + subject_ids + "_" + humanboneindex_name + "_" + str(int(t)))
-            model_creation_dict[humanboneindex_name] = (time.time() - t)/60
+                dump(nn, thisdir + "/core/ml_models/" + model_name)
         print("Model creation (in min):" + str((time.time() - t)/60))
-        return str(int(t)), model_creation_dict
+        

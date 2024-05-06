@@ -6,14 +6,14 @@ public class ReplayObject
 {
     public string subjectName;
     public List<ReplayInfo> replayInfo = new List<ReplayInfo>();
-    public TrainingType trainingType = TrainingType.PLANKHOLD;
+    public ExerciseType exerciseType = ExerciseType.PLANKHOLD;
 
     public ReplayObject() { }
-    public ReplayObject(string name, List<ReplayInfo> info, TrainingType training)
+    public ReplayObject(string name, List<ReplayInfo> info, ExerciseType training)
     {
         subjectName = name;
         replayInfo = info;
-        trainingType = training;
+        exerciseType = training;
     }
     // public List<float> timeStamp;   
 }

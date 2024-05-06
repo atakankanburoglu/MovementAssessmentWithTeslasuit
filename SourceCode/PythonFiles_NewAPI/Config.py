@@ -1,5 +1,5 @@
 # The nodes that are streamed from Unity to Python
-from enums.TrainingType import TrainingType
+from enums.ExerciseType import ExerciseType
 
 streamedNodes = ["RightUpperArm", "RightLowerArm", "LeftUpperArm", "LeftLowerArm",
                  "Chest", "Spine", "RightUpperLeg", "RightLowerLeg", "LeftUpperLeg", "LeftLowerLeg"]
@@ -29,10 +29,10 @@ classifierProperties = ["gyroscope", "accelerometer"]
 proMpJoints = streamedJoints
 
 class_segmentation_map = {
-    TrainingType.PLANKHOLD: "RightUpperArm",
-    TrainingType.SIDEPLANKRIGHT: "RightUpperLeg",
-    TrainingType.SIDEPLANKLEFT: "LeftUpperLeg",
-    TrainingType.FULLSQUAT: "RightUpperLeg"
+    ExerciseType.PLANKHOLD: "RightUpperArm",
+    ExerciseType.SIDEPLANKRIGHT: "RightUpperLeg",
+    ExerciseType.SIDEPLANKLEFT: "LeftUpperLeg",
+    ExerciseType.FULLSQUAT: "RightUpperLeg"
 }
 
 

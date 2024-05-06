@@ -9,7 +9,7 @@ public class Config
 
     public static ApplicationMode APPLICATION_MODE = ApplicationMode.Training;
 
-    public static TrainingType SELECTED_EXERCISE = TrainingType.PLANKHOLD;
+    public static ExerciseType SELECTED_EXERCISE = ExerciseType.PLANKHOLD;
 
     /**
      * Relevant if recorded data is played back and recorded again.

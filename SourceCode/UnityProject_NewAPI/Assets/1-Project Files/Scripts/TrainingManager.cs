@@ -12,9 +12,11 @@ public class TrainingManager : MonoBehaviour
     [SerializeField]
     private Dropdown algorithmDropDownModel;
     [SerializeField]
-    private Dropdown trainingTypeDropDownModel;
+    private Dropdown exerciseTypeDropDownModel;
     [SerializeField]
     private TMP_InputField subjectIDsInput;
+    [SerializeField]
+    private TMP_InputField measurementSetsInput;
     [SerializeField]
     private Toggle validationToggle;
     [SerializeField]
@@ -29,7 +31,7 @@ public class TrainingManager : MonoBehaviour
     {
         dataGateway = FindObjectOfType<DataGateway>();
 
-        FillTrainingTypeDropDownModel();
+        FillExerciseTypeDropDownModel();
         FillAlgorithmDropDownModel();
     }
 
@@ -38,11 +40,11 @@ public class TrainingManager : MonoBehaviour
         
     }
 
-    void FillTrainingTypeDropDownModel()
+    void FillExerciseTypeDropDownModel()
     {
-        string[] names = Enum.GetNames(typeof(TrainingType));
-        trainingTypeDropDownModel.ClearOptions();
-        trainingTypeDropDownModel.AddOptions(new List<string>(names));
+        string[] names = Enum.GetNames(typeof(ExerciseType));
+        exerciseTypeDropDownModel.ClearOptions();
+        exerciseTypeDropDownModel.AddOptions(new List<string>(names));
     }
 
     void FillAlgorithmDropDownModel()
@@ -52,7 +54,7 @@ public class TrainingManager : MonoBehaviour
         algorithmDropDownModel.AddOptions(new List<string>(names));
     }
 
-    public void CreateNewModel()
+    public void TrainModel()
     {
         if (subjectIDsInput.text == string.Empty)
         {
@@ -61,10 +63,10 @@ public class TrainingManager : MonoBehaviour
         } else
         {
             Algorithm algorithm = (Algorithm)Enum.Parse(typeof(Algorithm), algorithmDropDownModel.options[algorithmDropDownModel.value].text);
-            TrainingType trainingType = (TrainingType)Enum.Parse(typeof(TrainingType), trainingTypeDropDownModel.options[trainingTypeDropDownModel.value].text);
-            dataGateway.PythonClient.CreateNewModel(subjectIDsInput.text, trainingType, algorithm, validationToggle.isOn);
+            ExerciseType exerciseType = (ExerciseType)Enum.Parse(typeof(ExerciseType), exerciseTypeDropDownModel.options[exerciseTypeDropDownModel.value].text);
+            ModelDataObject modelDataObject = new ModelDataObject(subjectIDsInput.text, exerciseType, algorithm, measurementSetsInput.text);
+            dataGateway.TrainModel(modelDataObject, validationToggle.isOn);
         }
-        
     }
 
     public void Cancel()

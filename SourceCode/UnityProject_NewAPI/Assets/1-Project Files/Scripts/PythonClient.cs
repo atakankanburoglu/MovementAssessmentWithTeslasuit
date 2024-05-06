@@ -1,53 +1,27 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Threading;
 using UnityEngine;
 using AsyncIO;
 using NetMQ;
 using NetMQ.Sockets;
-using Debug = UnityEngine.Debug;
-using System.IO;
-using Newtonsoft.Json;
 
 
 public class PythonClient
 {
-    private Thread _senderThread;
-    private Thread _receiverThread;
-    private Queue imuDataQueue = new Queue();
-    private Boolean sendHeader = false;
+    private Thread senderThread;
+    private Thread receiverThread;
+    private Queue dataQueue = new Queue();
     private Boolean running = false;
-
-    //for Finishing Training Data Transfer
-    private State trainingMode = State.IDLE;
-    private string sampleInfo;
-    private SampleType sampleType;
-
-    //for Model Creation
-    private Boolean createModel = false;
-    private bool getRecordedExercises = false;
-    private string modelInfo;
-
-    //for Feedback
-    private State testingMode = State.IDLE;
-    private string modelInfoForTesting;
-
-    //private MotionFeedback _motionFeedback;
-    //private MocapJoints _mocapJoints;
-    private DataGateway _dataGateway;
+    private DataGateway dataGateway;
 
     public PythonClient()
     {
-        //_mocapJoints = MocapJoints.GetInstance();
-        //_motionFeedback = GameObject.Find("Teslasuit_Man").GetComponent<MotionFeedback>();
-        _dataGateway = GameObject.Find("DataGateway").GetComponent<DataGateway>();
-        _senderThread = new Thread(RunSend);
-        _senderThread.Start();
-        _receiverThread = new Thread(RunReceive);
-        _receiverThread.Start();
+        dataGateway = GameObject.Find("DataGateway").GetComponent<DataGateway>();
+        senderThread = new Thread(RunSend);
+        senderThread.Start();
+        receiverThread = new Thread(RunReceive);
+        receiverThread.Start();
         running = true;
     }
 
@@ -59,61 +33,11 @@ public class PythonClient
             publisher.Bind("tcp://*:5555");
             while (running)
             {
-                if (imuDataQueue.Count > 0 && (trainingMode == State.RUNNING || testingMode == State.RUNNING))
+                if (dataQueue.Count > 0)
                 {
-                    
-                    ImuDataObject dataToSend = (ImuDataObject)imuDataQueue.Dequeue();
-                    if (sendHeader)
-                    {
-                        string header = dataToSend.GetCsvHeader(";");
-                        publisher.SendFrame("ImuDataStream " + header);
-                        string csv = dataToSend.ToCSV(";");
-                        publisher.SendFrame("ImuDataStream " + csv);
-                        sendHeader = false;
-                    }
-                    else
-                    {
-                        string csv = dataToSend.ToCSV(";");
-                        publisher.SendFrame("ImuDataStream " + csv);
-                    }
-
-                }
-                if(trainingMode == State.FINISHED)
-                {
-                    publisher.SendFrame("TrainingMode " + trainingMode + ";" + sampleType);
-                    trainingMode = State.IDLE;
-                }
-                if (trainingMode == State.INIT)
-                {
-                    publisher.SendFrame("TrainingMode " + trainingMode + ";" + sampleInfo);
-                    trainingMode = State.RUNNING;
-                    sendHeader = true;
-                }
-                if (createModel)
-                {
-                    publisher.SendFrame("CreateModel " + modelInfo);
-                    createModel = false;
-                }
-                if (testingMode == State.INIT)
-                {
-                    ImuDataObject imuDataObject = new ImuDataObject(TrainingType.PLANKHOLD, null, 123); //dummy
-                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting + ";" + imuDataObject.GetCsvHeader(","));
-                    testingMode = State.RUNNING;
-                  
-                }
-                if (getRecordedExercises)
-                {
-                    publisher.SendFrame("TestingMode " + testingMode);
-                }
-                if (testingMode == State.RECORDED)
-                {
-                    publisher.SendFrame("TestingMode " + testingMode + ";" + modelInfoForTesting);
-                    testingMode = State.IDLE;
-                }
-                if (testingMode == State.FINISHED)
-                {
-                    publisher.SendFrame("TestingMode " + testingMode);
-                    testingMode = State.IDLE;
+                    FrameDataObject dataToSend = (FrameDataObject)dataQueue.Dequeue();
+                    string frame = dataToSend.ToString();
+                    publisher.SendFrame(frame);
                 }
                 Thread.Sleep(1);
             }
@@ -138,44 +62,14 @@ public class PythonClient
                 String topic = values[0];
                 string message = values[1];
 
-                if(topic == "ErrorResponseStream")
+                if(topic == "RelativeError")
                 {
-
-                    _dataGateway.OnExcerciseRecognized(message);
+                    dataGateway.OnExcerciseRecognized(message);
                 }
-                if (topic == "TestingMode")
+                if (topic == "ExerciseList")
                 {
-                    getRecordedExercises = false;
-                    _dataGateway.OnRecordedExercisesListReceived(message);
+                    dataGateway.OnRecordedExercisesListReceived(message);
                 }
-                //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
-
-                //TrainingType recognizedExercise = (TrainingType)Enum.Parse(typeof(TrainingType), values[0], true);
-                //if (recognizedExercise != null)
-                //{
-                //    _dataGateway.recognizedExercise = recognizedExercise;
-                //    Debug.Log($"Recognized: {recognizedExercise}");
-                //}
-
-
-                //int indexOffset = 2;
-                //Dictionary<String, Vector3> motionErrors = new Dictionary<string, Vector3>();
-
-                //for (var i = 0; i < _mocapJoints.JointNames.Count; i++)
-                //{
-                //    Vector3 error = new Vector3(
-                //        float.Parse(values[indexOffset + i * 3], CultureInfo.InvariantCulture),
-                //        float.Parse(values[indexOffset + i * 3 + 1], CultureInfo.InvariantCulture),
-                //        float.Parse(values[indexOffset + i * 3 + 2], CultureInfo.InvariantCulture));
-
-                //    if (!error.Equals(Vector3.zero))
-                //    {
-                //        motionErrors[_mocapJoints.JointNames[i]] = error;
-                //    }
-                //}
-
-                //_motionFeedback.MotionError = motionErrors;
-                //PerformanceAnalyzer.GetInstance().ErrorReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
                 Thread.Sleep(1);
             }
         }
@@ -183,49 +77,9 @@ public class PythonClient
         NetMQConfig.Cleanup(); // this line is needed to prevent unity freeze after one use, not sure why yet
     }
 
-    public void PushSuitData(ImuDataObject data)
+    public void PushData(FrameDataObject data)
     {
-        imuDataQueue.Enqueue(data);
-    }
-
-    public void StartTrainingMode(String subjectId, TrainingType trainingType)
-    {
-        trainingMode = State.INIT;
-        this.sampleInfo = subjectId + "_" + trainingType;
-    }
-
-    public void StopTrainingMode(SampleType sampleType)
-    {
-        trainingMode = State.FINISHED;
-        this.sampleType = sampleType;
-    }
-
-    public void GetRecordedExercises()
-    {
-        getRecordedExercises = true;
-    }
-
-    public void CreateNewModel(String subjectIds, TrainingType trainingType, Algorithm algorithm, Boolean validate)
-    {
-        createModel = true;
-        modelInfo = subjectIds + ";" + trainingType + ";" + algorithm + ";" + validate;
-    }
-
-    public void StartTestingMode(String subjectIds, String algorithm, Boolean newRecognitionModel)
-    {
-        testingMode = State.INIT;
-        modelInfoForTesting = subjectIds + "_" + algorithm + "_" + newRecognitionModel;
-    }
-
-    public void StartRecordedTestingMode(String subjectIds, String algorithm, String recordedExercise, Boolean newRecognitionModel)
-    {
-        testingMode = State.RECORDED;
-        modelInfoForTesting = subjectIds + ";" + algorithm + ";" + recordedExercise + ";" + newRecognitionModel;
-    }
-
-    public void StopTestingMode()
-    {
-        testingMode = State.FINISHED;
+        dataQueue.Enqueue(data);
     }
 
     public void Stop()
@@ -233,7 +87,7 @@ public class PythonClient
         running = false;
         // block main thread, wait for _runnerThread to finish its job first, so we can be sure that 
         // _runnerThread will end before main thread end
-        _senderThread.Join();
-        _receiverThread.Join();
+        senderThread.Join();
+        receiverThread.Join();
     }
 }

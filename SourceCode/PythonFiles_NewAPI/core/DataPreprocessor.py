@@ -10,18 +10,18 @@ from core.DataDenoiser import DataDenoiser
 class DataPreprocessor:
 
     @staticmethod
-    def preprocess_data_for_feedback_model(id_training_dict, leave_one_out_id):
+    def preprocess_data_for_feedback_model(id_training_dict, leave_one_out_id, measurement_sets, t_gyro):
         training_dict = {}
         validation_dict = {}
         for id, dfs in id_training_dict.items():
             for df in dfs:
                 i = 1
-                df = DataDenoiser.denoise_df_column_for_feedback_model(df)
+                df = DataDenoiser.denoise_df_column_for_feedback_model(df, measurement_sets)
                 mean_std_df = df.agg(['mean', 'std'])
                 humanboneindex_dfs = np.split(df, np.arange(int(len(df.columns)/10), len(df.columns), int(len(df.columns)/10)), axis=1)
                 for humanboneindex_df in humanboneindex_dfs:
                     humanboneindex_df = humanboneindex_df.reset_index(drop=True)
-                    gyro_df = DataDenoiser.denoise_gyro(humanboneindex_df)
+                    gyro_df = DataDenoiser.denoise_gyro(humanboneindex_df, t_gyro)
                     a = 0
                     boneindexList = []
                     gyroXList = []

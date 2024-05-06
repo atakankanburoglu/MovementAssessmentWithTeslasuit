@@ -3,14 +3,14 @@
     "",
     "\\core",
     "\\core\\analysis",
-    "\\core\\analysis\\scores",
+    "\\core\\analysis\\old",
+    "\\core\\analysis\\old\\scores",
     "\\core\\ml_models",
-    "\\core\\ml_models\\SIDEPLANKLEFT",
-    "\\core\\ml_models\\SIDEPLANKLEFT\\best",
-    "\\core\\ml_models\\SIDEPLANKLEFT\\best\\no_magn9x",
-    "\\core\\samples",
+    "\\core\\ml_models\\FULLSQUAT",
+    "\\core\\ml_models\\FULLSQUAT\\RF",
+    "\\core\\ml_models\\SIDEPLANKRIGHT",
     "\\server"
   ],
-  "SelectedNode": "\\core\\ModelValidator.py",
+  "SelectedNode": "\\core\\ModelEvaluator.py",
   "PreviewInSolutionExplorer": false
 }
