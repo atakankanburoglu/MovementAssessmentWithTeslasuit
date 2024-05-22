@@ -30,15 +30,16 @@ class ModelTester:
         self.columns = ['Timestamp', 'HumanBoneIndex_Axis', 'Error']
         self.models = {}
 
-    def get_exercise_recognition(self, imu_data):
+    def get_imu_df(self, imu_data):
         tmp = []
         tmp.append(imu_data.tolist())
         testing_data = pd.DataFrame(tmp, columns=self.feature_names)
-        testing_data.drop(['ExerciseType'], axis=1, inplace=True) 
-        testing_data = testing_data.drop(['Timestamp'], axis=1)
+        return testing_data
+
+    def get_exercise_recognition(self, testing_df):
         thisdir = os.getcwd()
         svc = load(thisdir + "/core/ml_models/exercise_recognition_svm_model")
-        exercise_recognition = svc.predict(testing_data)
+        exercise_recognition = svc.predict(testing_df)
         return exercise_recognition[0]
 
     def load_models(self):
@@ -54,13 +55,13 @@ class ModelTester:
             self.model_data.exercise_type = exercise_recognition
             self.load_models()
 
-        index = suit_data.index
+        columns = suit_data.columns
         testing_df = pd.DataFrame()
-        testing_df['HumanBoneIndex_Axis'] = suit_data.index
-        testing_df['Gyro_x'] = [0]*suit_data.index.size
-        testing_df['Gyro_y'] = [0]*suit_data.index.size
-        testing_df['Gyro_z'] = [0]*suit_data.index.size
-        testing_df['Value'] = suit_data.values
+        testing_df['HumanBoneIndex_Axis'] = suit_data.columns
+        testing_df['Gyro_x'] = [0]*suit_data.columns.size
+        testing_df['Gyro_y'] = [0]*suit_data.columns.size
+        testing_df['Gyro_z'] = [0]*suit_data.columns.size
+        testing_df['Value'] = suit_data.values[0]
         
         relative_error = []
         for humanboneIndex_name, df in testing_df.groupby(testing_df['HumanBoneIndex_Axis'].str.split("_").str[0]):

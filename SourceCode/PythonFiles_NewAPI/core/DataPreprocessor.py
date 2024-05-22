@@ -16,7 +16,7 @@ class DataPreprocessor:
         for id, dfs in id_training_dict.items():
             for df in dfs:
                 i = 1
-                df = DataDenoiser.denoise_df_column_for_feedback_model(df, measurement_sets)
+                df = DataDenoiser.denoise_df_column_for_feedback_model_training(df, measurement_sets)
                 mean_std_df = df.agg(['mean', 'std'])
                 humanboneindex_dfs = np.split(df, np.arange(int(len(df.columns)/10), len(df.columns), int(len(df.columns)/10)), axis=1)
                 for humanboneindex_df in humanboneindex_dfs:

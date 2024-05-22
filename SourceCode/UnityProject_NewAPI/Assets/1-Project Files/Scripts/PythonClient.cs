@@ -30,7 +30,7 @@ public class PythonClient
         ForceDotNet.Force(); // this line is needed to prevent unity freeze after one use, not sure why yet
         using (PublisherSocket publisher = new PublisherSocket())
         {
-            publisher.Bind("tcp://*:5555");
+            publisher.Bind("tcp://*:5556");
             while (running)
             {
                 if (dataQueue.Count > 0)
@@ -51,7 +51,7 @@ public class PythonClient
         ForceDotNet.Force(); // this line is needed to prevent unity freeze after one use, not sure why yet
         using (SubscriberSocket subscriber = new SubscriberSocket())
         {
-            subscriber.Connect("tcp://localhost:6666");
+            subscriber.Connect("tcp://localhost:6667");
             //subscriber.Subscribe("ErrorResponseStream");
             subscriber.SubscribeToAnyTopic();
 

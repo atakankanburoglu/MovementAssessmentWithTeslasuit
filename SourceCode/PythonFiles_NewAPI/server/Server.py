@@ -9,11 +9,11 @@ class Server:
         self.dataGateway = dataGateway
         self.context = zmq.Context()
         self.receive_socket = self.context.socket(zmq.SUB)
-        self.receive_socket.connect("tcp://localhost:5555")
+        self.receive_socket.connect("tcp://localhost:5556")
         self.receive_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         self.receive_socket.setsockopt(zmq.CONFLATE, 1)
         self.send_socket = self.context.socket(zmq.PUB)
-        self.send_socket.bind("tcp://*:6666")
+        self.send_socket.bind("tcp://*:6667")
 
         self.queue = []
         self.thread1 = None

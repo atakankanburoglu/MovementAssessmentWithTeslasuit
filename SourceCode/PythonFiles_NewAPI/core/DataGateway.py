@@ -4,6 +4,7 @@ import csv
 import pandas as pd
 import os
 import ast
+import copy
 from core.DataRecorder import DataRecorder
 from core.DataRetriever import DataRetriever
 from core.DataPreprocessor import DataPreprocessor
@@ -30,7 +31,7 @@ class DataGateway:
                 sample_data = SampleData(payload[0], payload[1], payload[2])
                 self.dataRecorder.save_data_to_csv(sample_data)
         if topic == "Training":
-            if payload[1] == "ALL":
+            if payload[1] == "ALL" and payload[2] != "SVM":
                 for e in ["SIDEPLANKLEFT"]: #"FULLSQUAT", "PLANKHOLD", "SIDEPLANKRIGHT", 
                     for m in [ "6x,magn", "9x,magn", "magn,Accel", "magn,accel"]: #"magn", "9x", "6x", "accel", "Accel", "accel,Accel",
                         for t_g in [5, 10]:
@@ -38,6 +39,7 @@ class DataGateway:
                             model_data = ModelData(payload[0], e, payload[2], t_g, m, t)
                             self.on_train_model(model_data, payload[4])
             else:
+                t = time.time()
                 model_data = ModelData(payload[0], payload[1], payload[2], 5, payload[3], t)
                 self.on_train_model(model_data, payload[4])
         if topic == "Testing":
@@ -56,26 +58,36 @@ class DataGateway:
                 #self.on_testing_recorded_fullsquat()
                 #self.on_testing_recorded_plankhold()
                 #self.on_testing_recorded_all()#model_data, )
-                for t_g in [5, 10]: 
-                    model_data = ModelData(payload[0], "", payload[2], t_g, payload[3], 0)
-                    self.on_testing_recorded(model_data, payload[4])
+                for e in [("SIDEPLANKLEFT", "7", "NN", 10), ("SIDEPLANKLEFT", "7", "RF", 10)]: #["FULLSQUAT", "PLANKHOLD"]: [("FULLSQUAT", "14", "RF", 5), ("FULLSQUAT", "14", "RF", 10), ("PLANKHOLD", "9", "RF", 10), ("PLANKHOLD", "9", "RF", 5), ("SIDEPLANKLEFT", "14", "NN", 10), ("SIDEPLANKLEFT", "14", "RF", 10), ("SIDEPLANKRIGHT", "7", "NN", 5), ("SIDEPLANKRIGHT", "7", "RF", 5), ("SIDEPLANKRIGHT", "9", "NN", 5), ("SIDEPLANKRIGHT", "10", "NN", 5), ("SIDEPLANKRIGHT", "10", "RF", 5), ("SIDEPLANKRIGHT", "14", "RF", 5)]
+                    thisdir = os.getcwd()
+                    files = [f for f in os.listdir(thisdir + "/core/samples/") if f.endswith(".csv") if e[0] in f and e[1] + "_" in f and "Negative" in f]
+                    for f in files:
+                        filename = f.split("_")
+                        model_data = ModelData("1-14-"+filename[0], "", e[2], e[3], payload[3], 0)
+                        self.on_testing_recorded(model_data, f)
+                            #model_data = ModelData(payload[0], "", payload[2], t_g, payload[3], 0)
+                            #self.on_testing_recorded(model_data, payload[4])
+                #for t_g in [5, 10]: 
+                #            
         
     def on_imu_data_stream(self, imu_data, application_mode):
         if application_mode == "Recording":
             self.dataRecorder.log_data(imu_data)
         if application_mode == "Testing":
-           exercise_recognition = self.modelTester.get_exercise_recognition(imu_data)
-           imu_data = DataDenoiser.denoise_df_index(imu_data)
-           if exercise_recognition != None:
-               error = self.modelTester.get_feedback_from_model(exercise_recognition, imu_data)
+            testing_df = self.modelTester.get_imu_df(imu_data)
+            ex_df = DataDenoiser.denoise_df_for_exercise_recognition_model_testing(copy.deepcopy(testing_df))
+            exercise_recognition = self.modelTester.get_exercise_recognition(ex_df)
+            testing_df = DataDenoiser.denoise_df_column_for_feedback_model_testing(testing_df, self.modelTester.model_data.measurement_sets)
+            if exercise_recognition != None:
+               error = self.modelTester.get_feedback_from_model(exercise_recognition, testing_df)
                return exercise_recognition, error
-           else: 
+            else: 
                 return exercise_recognition
 
     def on_train_model(self, model_data, validate):
         if model_data.algorithm == "SVM":
             training_data = DataRetriever.get_data_from_csv_for_exercise_recognition()
-            training_data = DataDenoiser.denoise_df_for_exercise_recognition_model(training_data)
+            training_data = DataDenoiser.denoise_df_for_exercise_recognition_model_training(training_data)
             ModelTrainer.train_exercise_recognition_model(training_data)
         else:
             id_training_dict = DataRetriever.get_data_from_csv_for_feedback_model(model_data.subject_ids, model_data.exercise_type)
@@ -113,8 +125,7 @@ class DataGateway:
         self.modelTester = ModelTester(model_data, testing_df.columns)
         t = time.time()
         relative_errors = []
-        random_rows = np.random.choice(len(testing_df)-1, replace=False, size=2)
-        for i in random_rows:
+        for i in range(500):
             ex_er = self.on_imu_data_stream(testing_df.loc[i], "Testing")
             relative_errors.append((ex_er[0], i, ex_er[1]))
             print("Row " + str(i) + " tested")
@@ -137,7 +148,7 @@ class DataGateway:
                         sample_df = pd.read_csv(thisdir + "/core/samples/" + sample)
                         model_data = ModelData("", "", "", "", "", 0)
                         self.modelTester = ModelTester(model_data, sample_df.columns)
-                        fulllsquat_accel_df = DataDenoiser.denoise_df_column_for_feedback_model(sample_df, [m[1:-1]])
+                        fulllsquat_accel_df = DataDenoiser.denoise_df_column_for_feedback_model_training(sample_df, [m[1:-1]])
                         for std_coeff in [2]:
                             t = time.time()
                             self.modelTester.test_feedback_models_on_df(models_for_samples_list, exercise_type, fulllsquat_accel_df, sample_name, result, std_coeff)

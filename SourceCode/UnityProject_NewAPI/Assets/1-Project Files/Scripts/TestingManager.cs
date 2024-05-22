@@ -186,7 +186,7 @@ public class TestingManager : MonoBehaviour
                 amplitude = 100 * value;
                 pulseWidth = 320 * value;
                 TargetBoneIndex = boneIndex;
-                //Play(currentChannelIndex); 
+                Play(currentChannelIndex); 
                 //TODO: show feedback through arrow
             }
         }
