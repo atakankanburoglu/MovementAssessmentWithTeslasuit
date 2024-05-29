@@ -1,10 +1,6 @@
 import pandas as pd
-
 import os
-import Config
 import time
-from Plotter import Plotter
-from data.DataAccess import DataAccess
 import csv
 
 class DataRecorder:

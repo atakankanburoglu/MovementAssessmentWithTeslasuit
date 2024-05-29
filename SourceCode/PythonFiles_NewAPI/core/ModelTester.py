@@ -26,14 +26,13 @@ class ModelTester:
 
     def __init__(self, model_data, feature_names):
         self.model_data = model_data
-        self.feature_names = feature_names
+        self.feature_names = feature_names.split(",")
         self.columns = ['Timestamp', 'HumanBoneIndex_Axis', 'Error']
         self.models = {}
 
     def get_imu_df(self, imu_data):
-        tmp = []
-        tmp.append(imu_data.tolist())
-        testing_data = pd.DataFrame(tmp, columns=self.feature_names)
+        tmp = imu_data.imu_data.tolist().split(",")
+        testing_data = pd.DataFrame(tmp, index=self.feature_names)
         return testing_data
 
     def get_exercise_recognition(self, testing_df):
@@ -61,7 +60,7 @@ class ModelTester:
         testing_df['Gyro_x'] = [0]*suit_data.columns.size
         testing_df['Gyro_y'] = [0]*suit_data.columns.size
         testing_df['Gyro_z'] = [0]*suit_data.columns.size
-        testing_df['Value'] = suit_data.values[0]
+        testing_df['Value'] = pd.to_numeric(suit_data.values[0])
         
         relative_error = []
         for humanboneIndex_name, df in testing_df.groupby(testing_df['HumanBoneIndex_Axis'].str.split("_").str[0]):
@@ -86,14 +85,7 @@ class ModelTester:
         return relative_error
      
     def test_feedback_models_on_df(self, models_for_samples_list, exercise_type, sample_df, sample_name, result, std_coeff):
-        
-        #plot_df = pd.DataFrame()
-        #plot_df['HumanBoneIndex_Axis'] = suit_data.index
         thisdir = os.getcwd()
-        #files = [f for f in os.listdir(thisdir + "/core/ml_models/" + exercise_type + "/best/" + ax + "/") if f in model_for_samples_list]
-        #relevant_humanboneindexes = list(dict.fromkeys([m[5] for m in models_for_samples_list]))
-        #sample_df = sample_df.loc[:, sample_df.columns.str.contains("|".join(relevant_humanboneindexes))] 
-        
         sample_df = sample_df.loc[:, ~sample_df.columns.str.contains("gyro")] 
         chosen_idx = np.random.choice(len(sample_df)-1, replace=False, size=250)
         for x in chosen_idx:

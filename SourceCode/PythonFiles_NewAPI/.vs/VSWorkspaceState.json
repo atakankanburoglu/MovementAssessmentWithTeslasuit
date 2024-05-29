@@ -2,15 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\core",
-    "\\core\\analysis",
-    "\\core\\analysis\\old",
-    "\\core\\analysis\\old\\scores",
-    "\\core\\ml_models",
-    "\\core\\ml_models\\FULLSQUAT",
-    "\\core\\ml_models\\FULLSQUAT\\RF",
-    "\\core\\ml_models\\SIDEPLANKRIGHT",
-    "\\server"
+    "\\core\\ml_models"
   ],
-  "SelectedNode": "\\server\\Server.py",
+  "SelectedNode": "\\server",
   "PreviewInSolutionExplorer": false
 }

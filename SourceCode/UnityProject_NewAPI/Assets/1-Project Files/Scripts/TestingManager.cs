@@ -58,7 +58,7 @@ public class TestingManager : MonoBehaviour
 
     public TsHumanBoneIndex TargetBoneIndex = TsHumanBoneIndex.LeftThumbDistal;
 
-    private IHapticDynamicPlayable m_hapticPlayable;
+    private IHapticDynamicPlayable m_hapticPlayable ;
 
     private Dictionary<TsHumanBoneIndex, List<IMapping2dElectricChannel>> m_channels = new Dictionary<TsHumanBoneIndex, List<IMapping2dElectricChannel>>();
 
@@ -80,7 +80,7 @@ public class TestingManager : MonoBehaviour
 
     public TsHumanAnimator tsHumanAnimator;
 
-    private ExerciseType exerciseType;
+    private ExerciseType exerciseType = ExerciseType.PLANKHOLD;
 
     List<string> recordedExercisesList = new List<string>();
 
@@ -120,12 +120,12 @@ public class TestingManager : MonoBehaviour
             timeInterval = 10.0f;
         }
         recordedExercisesDropDown.value = recordedExercisesDropDownOption;
+        recognizedExerciseOutput.text = Enum.GetName(typeof(ExerciseType), this.exerciseType);
     }
 
     public void FillRecognizedExcerciseOutputInput(ExerciseType exerciseType)
     {
         this.exerciseType = exerciseType;
-        recognizedExerciseOutput.text = Enum.GetName(typeof(ExerciseType), exerciseType);
     }
 
 
@@ -242,7 +242,10 @@ public class TestingManager : MonoBehaviour
     public void PauseFeedback()
     {
         running = false;
-        m_hapticPlayable.IsPaused = !m_hapticPlayable.IsPaused;
+        if(m_hapticPlayable != null)
+        {
+            m_hapticPlayable.IsPaused = !m_hapticPlayable.IsPaused;
+        }
     }
     public void StopFeedback()
     {
@@ -251,7 +254,10 @@ public class TestingManager : MonoBehaviour
         timerCountdown.gameObject.SetActive(false);
         timeInterval = 10.0f;
 
-        m_hapticPlayable.Stop();
+        if (m_hapticPlayable != null)
+        {
+            m_hapticPlayable.Stop();
+        }
     }
 
     public void Cancel()

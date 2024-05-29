@@ -30,7 +30,7 @@ public class PythonClient
         ForceDotNet.Force(); // this line is needed to prevent unity freeze after one use, not sure why yet
         using (PublisherSocket publisher = new PublisherSocket())
         {
-            publisher.Bind("tcp://*:5556");
+            publisher.Bind("tcp://*:5555");
             while (running)
             {
                 if (dataQueue.Count > 0)
@@ -51,7 +51,7 @@ public class PythonClient
         ForceDotNet.Force(); // this line is needed to prevent unity freeze after one use, not sure why yet
         using (SubscriberSocket subscriber = new SubscriberSocket())
         {
-            subscriber.Connect("tcp://localhost:6667");
+            subscriber.Connect("tcp://localhost:6666");
             //subscriber.Subscribe("ErrorResponseStream");
             subscriber.SubscribeToAnyTopic();
 
@@ -60,14 +60,16 @@ public class PythonClient
                 string payload = subscriber.ReceiveFrameString();
                 String[] values = payload.Split(' ');
                 String topic = values[0];
-                string message = values[1];
 
-                if(topic == "RelativeError")
+                if (topic == "RelativeError")
                 {
-                    dataGateway.OnExcerciseRecognized(message);
+                    string exerciseRecognition = values[1];
+                    string directions = values[2];
+                    dataGateway.OnExcerciseRecognized(exerciseRecognition, directions);
                 }
                 if (topic == "ExerciseList")
                 {
+                    string message = values[1];
                     dataGateway.OnRecordedExercisesListReceived(message);
                 }
                 Thread.Sleep(1);

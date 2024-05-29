@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TsAPI.Types;
 using TsSDK;
+using UnityEditor;
 using UnityEngine;
 //* marked places are where i have added something.
 
@@ -26,8 +28,9 @@ public class TsHumanAnimator : MonoBehaviour
     //*
     public bool Replay;
     //*
-    float IPoseTimer;
-
+    public GameObject ErrorArrow;
+    private Dictionary<TsHumanBoneIndex, GameObject> m_errorArrows = new Dictionary<TsHumanBoneIndex, GameObject>();
+    private Dictionary<TsHumanBoneIndex, Vector3> m_errorArrowsTransform = new Dictionary<TsHumanBoneIndex, Vector3>();
     private void Start()
     {
         if (m_avatarSettings == null)
@@ -45,6 +48,7 @@ public class TsHumanAnimator : MonoBehaviour
         }
 
         SetupAvatarBones();
+        SetupErrorArrows();
     }
 
     private void SetupAvatarBones()
@@ -56,6 +60,17 @@ public class TsHumanAnimator : MonoBehaviour
             if (boneTransform != null && !m_bonesTransforms.ContainsKey(reqBoneIndex))
             {
                 m_bonesTransforms.Add(reqBoneIndex, boneTransform);
+            }
+        }
+    }
+
+    private void SetupErrorArrows()
+    {
+        foreach (var reqBoneIndex in TsHumanBones.SuitBones)
+        {
+            if (!m_errorArrows.ContainsKey(reqBoneIndex))
+            {
+                m_errorArrows.Add(reqBoneIndex, Instantiate(ErrorArrow));
             }
         }
     }
@@ -96,6 +111,15 @@ public class TsHumanAnimator : MonoBehaviour
             {
                 m_imuData.Add(boneIndex, imuData.GetSensorData(boneIndex));
             }
+            
+            if (m_errorArrowsTransform.Count != 0)
+            {
+                if(boneIndex == TsHumanBoneIndex.Hips && m_errorArrowsTransform.TryGetValue(boneIndex, out var v3)){
+                    SetErrorArrow(boneIndex, v3, skeleton.GetBoneTransform(TsHumanBoneIndex.Hips), skeleton.GetBoneTransform(boneIndex));
+
+                }
+            }
+
         }
 
         TryDoWithBone(m_rootBone, (boneTransform) =>
@@ -109,6 +133,21 @@ public class TsHumanAnimator : MonoBehaviour
             m_motionProvider.Calibrate();
             IPose = false;
         }
+        
+    }
+
+    //*
+    public void SetErrorArrow(TsHumanBoneIndex currentBoneIndex, Vector3 v3, TsTransform boneTransformHips, TsTransform boneTransform)
+    {
+        if (m_errorArrows.TryGetValue(currentBoneIndex, out GameObject errorArrow))
+        {
+            errorArrow.transform.position = Conversion.TsVector3ToUnityVector3(boneTransform.position);
+            Vector3 toLookAtMagn = new Vector3(boneTransform.position.x + (-v3.x), boneTransform.position.y + v3.y, boneTransform.position.z + (-v3.z));
+            errorArrow.transform.LookAt(toLookAtMagn);
+            errorArrow.transform.rotation = Quaternion.FromToRotation(Conversion.TsVector3ToUnityVector3(boneTransform.position), toLookAtMagn);
+            errorArrow.SetActive(true);
+        }
+
     }
 
     public void Calibrate()
@@ -152,17 +191,49 @@ public class TsHumanAnimator : MonoBehaviour
         action(boneTransform);
     }
 
-    private void TryDoWithSensorData(TsHumanBoneIndex boneIndex, Action<TsImuSensorData> action)
-    {
-        if (!m_imuData.TryGetValue(boneIndex, out var imuData))
-        {
-            return;
-        }
-
-        action(imuData);
-    }
 
     //*
+    public void ShowErrors(String errors)
+    {
+        List<TsHumanBoneIndex> errorIndexes = new List<TsHumanBoneIndex>();
+        string pattern = @"{[^()]*}|[^()]+";
+        MatchCollection matches = Regex.Matches(errors, pattern);
+        foreach (Match m in matches)
+        {
+            String[] entry = m.Value.Split(',');
+            if (entry.Length == 5)
+            {
+                TsHumanBoneIndex currentBoneIndex = (TsHumanBoneIndex)Enum.Parse(typeof(TsHumanBoneIndex), entry[0]);
+                float.TryParse(entry[1], System.Globalization.NumberStyles.Number, null, out float value1);
+                float.TryParse(entry[2], System.Globalization.NumberStyles.Number, null, out float value2);
+                float.TryParse(entry[3], System.Globalization.NumberStyles.Number, null, out float value3);
+                //float.TryParse(entry[4], System.Globalization.NumberStyles.Number, null, out float angle);
+                Vector3 direction = new Vector3(value1, value2, value3);
+                if (m_errorArrowsTransform.ContainsKey(currentBoneIndex))
+                {
+                    m_errorArrowsTransform[currentBoneIndex] = direction;
+                }
+                else
+                {
+                    m_errorArrowsTransform.Add(currentBoneIndex, direction);
+                }
+                errorIndexes.Add(currentBoneIndex);
+            }
+        }
+
+        foreach (var boneIndex in TsHumanBones.SuitBones)
+        {
+            if (!errorIndexes.Contains(boneIndex))
+            {
+                if (m_errorArrows.TryGetValue(boneIndex, out GameObject errorArrow))
+                {
+                    errorArrow.SetActive(false);
+                }
+            }
+        }
+    }
+
+
     private void OnDrawGizmos()
     {
         Color blue = new Color(0, 0, 1, 125);

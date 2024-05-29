@@ -11893,9 +11893,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: TsReplaySaver, Assembly-CSharp
-        m_MethodName: StopSaving
+      - m_Target: {fileID: 1281827034}
+        m_TargetAssemblyTypeName: TestingManager, Assembly-CSharp
+        m_MethodName: PauseFeedback
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -15498,6 +15498,7 @@ MonoBehaviour:
   m_avatarSettings: {fileID: 11400000, guid: 28b28cdebfad7124082e48abe6a63513, type: 2}
   IPose: 1
   Replay: 0
+  ErrorArrow: {fileID: 1487737835}
 --- !u!1 &1324782059 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 662666217249506366, guid: 7c60ea09550d7404f876dd1715ccaa84, type: 3}
@@ -16741,12 +16742,12 @@ GameObject:
   m_Component:
   - component: {fileID: 1487737836}
   m_Layer: 0
-  m_Name: Error
+  m_Name: ErrorArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1487737836
 Transform:
   m_ObjectHideFlags: 0
@@ -16756,7 +16757,7 @@ Transform:
   m_GameObject: {fileID: 1487737835}
   m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: -0.5}
   m_LocalPosition: {x: 0.1, y: -0.1, z: 1.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_Children:
   - {fileID: 1646353594}
   - {fileID: 1336182569}
@@ -19352,6 +19353,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1281827034}
+        m_TargetAssemblyTypeName: TestingManager, Assembly-CSharp
+        m_MethodName: StopFeedback
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -24043,6 +24056,7 @@ MonoBehaviour:
   m_avatarSettings: {fileID: 11400000, guid: f74af6d2b8db2e24497226a454dca29b, type: 2}
   IPose: 0
   Replay: 0
+  ErrorArrow: {fileID: 0}
 --- !u!1 &2096608321
 GameObject:
   m_ObjectHideFlags: 0

@@ -20,18 +20,18 @@ class DataDenoiser:
     
     @staticmethod
     def denoise_df_column_for_feedback_model_testing(df, measurement_sets):
-        df = df.drop(['ExerciseType'], axis=1)
-        df = df.drop(['Timestamp'], axis=1)
-        df = df.loc[:,~df.columns.str.startswith('Spine')]
-        df = df.loc[:,~df.columns.str.startswith('Chest')]
-        df = df.loc[:,~df.columns.str.startswith('LeftShoulder')]
-        df = df.loc[:,~df.columns.str.startswith('RightShoulder')]
-        df = df.loc[:,~df.columns.str.contains('Foot')]
-        df = df.loc[:,~df.columns.str.contains('Hand')]
-        df = df.loc[:,~df.columns.str.contains('gyro')]
+        df = df.drop(['ExerciseType'], axis=0)
+        df = df.drop(['Timestamp'], axis=0)
+        df = df.loc[~df.index.str.startswith('Spine')]
+        df = df.loc[~df.index.str.startswith('Chest')]
+        df = df.loc[~df.index.str.startswith('LeftShoulder')]
+        df = df.loc[~df.index.str.startswith('RightShoulder')]
+        df = df.loc[~df.index.str.contains('Foot')]
+        df = df.loc[~df.index.str.contains('Hand')]
+        df = df.loc[~df.index.str.contains('gyro')]
         if len(measurement_sets) > 0:
             measurement_sets_join = "|".join(list(measurement_sets)) 
-            df = df.loc[:,~df.columns.str.contains(measurement_sets_join)] 
+            df = df.loc[~df.index.str.contains(measurement_sets_join)] 
         return df
 
 
@@ -52,18 +52,18 @@ class DataDenoiser:
     
     @staticmethod 
     def denoise_df_for_exercise_recognition_model_testing(df):
-        df = df.drop(['ExerciseType'], axis=1)
-        df = df.drop(['Timestamp'], axis=1)
-        df = df.loc[:,~df.columns.str.startswith('Spine')]
-        df = df.loc[:,~df.columns.str.startswith('Chest')]
-        df = df.loc[:,~df.columns.str.startswith('LeftShoulder')]
-        df = df.loc[:,~df.columns.str.startswith('RightShoulder')]
-        df = df.loc[:,~df.columns.str.contains('Foot')]
-        df = df.loc[:,~df.columns.str.contains('Hand')]
-        df = df.loc[:,~df.columns.str.contains('magn')]
-        df = df.loc[:,~df.columns.str.contains('linearAccel')]
-        df = df.loc[:,~df.columns.str.contains('9x')]
-        df = df.loc[:,~df.columns.str.contains('6x')]
+        df = df.drop(['ExerciseType'], axis=0)
+        df = df.drop(['Timestamp'], axis=0)
+        df = df.loc[~df.index.str.startswith('Spine')]
+        df = df.loc[~df.index.str.startswith('Chest')]
+        df = df.loc[~df.index.str.startswith('LeftShoulder')]
+        df = df.loc[~df.index.str.startswith('RightShoulder')]
+        df = df.loc[~df.index.str.contains('Foot')]
+        df = df.loc[~df.index.str.contains('Hand')]
+        df = df.loc[~df.index.str.contains('magn')]
+        df = df.loc[~df.index.str.contains('linearAccel')]
+        df = df.loc[~df.index.str.contains('9x')]
+        df = df.loc[~df.index.str.contains('6x')]
         return df
 
     @staticmethod

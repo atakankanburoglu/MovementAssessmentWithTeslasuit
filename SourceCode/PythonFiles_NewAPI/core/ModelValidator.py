@@ -5,19 +5,11 @@ from joblib import dump
 from sklearn import svm, linear_model
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
-from sklearn.preprocessing import LabelEncoder
-import Config
-from data.DataAccess import DataAccess
-from data.DataManager import DataManager
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import cross_val_score, LeaveOneGroupOut
 import seaborn as sns
 from enums.Algorithm import Algorithm
 import os
-from sklearn.metrics import f1_score, accuracy_score
 from joblib import load
 
 pd.set_option('mode.chained_assignment', None)

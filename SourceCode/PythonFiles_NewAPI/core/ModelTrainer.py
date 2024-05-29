@@ -1,20 +1,12 @@
 import pandas as pd
 import time
-from sklearn import svm
 from joblib import dump
 from sklearn import svm, linear_model
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
-from sklearn.preprocessing import LabelEncoder
-import Config
-from data.DataAccess import DataAccess
-from data.DataManager import DataManager
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.neighbors import KNeighborsClassifier
 import seaborn as sns
-from enums.Algorithm import Algorithm
 from core.DataDenoiser import DataDenoiser
 import os
 

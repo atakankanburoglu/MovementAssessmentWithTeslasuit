@@ -70,10 +70,14 @@ public class DataGateway : MonoBehaviour
         pythonClient.PushData(frameDataObject);
     }
 
-    public void OnExcerciseRecognized(string exercise)
+    public void OnExcerciseRecognized(String exerciseRecognition, String directions)
     {
-        ExerciseType exerciseType = (ExerciseType)Enum.Parse(typeof(ExerciseType), exercise);
+        ExerciseType exerciseType = (ExerciseType)Enum.Parse(typeof(ExerciseType), exerciseRecognition);
         testingManager.FillRecognizedExcerciseOutputInput(exerciseType);
+        if(directions != null)
+        {
+            //testingManager.tsHumanAnimator.ShowErrors(directions); TODO
+        }
     }
 
     public void OnRecordedExercisesListReceived(string recordedExercisesList)
