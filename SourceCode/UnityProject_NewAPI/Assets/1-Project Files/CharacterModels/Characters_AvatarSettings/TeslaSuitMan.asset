@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TeslaSuitMan
   m_EditorClassIdentifier: 
   m_avatar: {fileID: 9000000, guid: 0b5013d150001eb41b1d9b7c01741889, type: 3}
-  m_armsTPoseToIPoseDegrees: 83
+  m_armsTPoseToIPoseDegrees: 75
   m_bones:
   - boneIndex: 0
     boneName: Maniken_skeletool:pelvis
@@ -72,32 +72,32 @@ MonoBehaviour:
     tPosePosition: {x: 0.0867242, y: 1.8090589, z: -0.058939576}
   - boneIndex: 14
     boneName: Maniken_skeletool:shoulder_l
-    iPoseRotation: {x: 0.017610561, y: 0.027945133, z: -0.68044025, w: -0.73205906}
+    iPoseRotation: {x: 0.019517016, y: 0.026648607, z: -0.62771684, w: -0.7777409}
     tPoseRotation: {x: 0.031706534, y: 0.009260556, z: -0.0245426, w: -0.99915314}
     tPosePosition: {x: -0.19011296, y: 1.7746367, z: -0.064265504}
   - boneIndex: 15
     boneName: Maniken_skeletool:shoulder_r
-    iPoseRotation: {x: -0.66966, y: -0.7420786, z: 0.020547163, w: 0.021290682}
+    iPoseRotation: {x: -0.6162639, y: -0.786984, z: 0.021982273, w: 0.01980552}
     tPoseRotation: {x: -0.009829521, y: -0.9995141, z: 0.029496547, w: 0.0023308164}
     tPosePosition: {x: 0.20484747, y: 1.7693087, z: -0.06508958}
   - boneIndex: 16
     boneName: Maniken_skeletool:elbow_l
-    iPoseRotation: {x: -0.014962355, y: -0.06474988, z: -0.6559356, w: -0.75188607}
+    iPoseRotation: {x: -0.01944263, y: -0.06354843, z: -0.60188884, w: -0.7958102}
     tPoseRotation: {x: -0.05411071, y: -0.038580436, z: 0.0069480836, w: -0.9977654}
     tPosePosition: {x: -0.51070005, y: 1.7558932, z: -0.06803572}
   - boneIndex: 17
     boneName: Maniken_skeletool:elbow_r
-    iPoseRotation: {x: -0.64936244, y: -0.7577451, z: -0.018533641, w: -0.061707675}
+    iPoseRotation: {x: -0.594923, y: -0.80119646, z: -0.022793004, w: -0.060264517}
     tPoseRotation: {x: 0.015753359, y: -0.9977981, z: -0.05476962, w: -0.033935554}
     tPosePosition: {x: 0.5132023, y: 1.7526804, z: -0.068350315}
   - boneIndex: 18
     boneName: Maniken_skeletool:hand_01_l
-    iPoseRotation: {x: -0.010289012, y: -0.07620693, z: -0.6236374, w: -0.7779227}
+    iPoseRotation: {x: -0.015579875, y: -0.07530356, z: -0.5678531, w: -0.8195304}
     tPoseRotation: {x: -0.05820225, y: -0.050257906, z: 0.04839039, w: -0.9958643}
     tPosePosition: {x: -0.8256317, y: 1.761545, z: -0.04479003}
   - boneIndex: 19
     boneName: Maniken_skeletool:hand_01_r
-    iPoseRotation: {x: -0.62880737, y: -0.77613944, z: -0.020051701, w: -0.042514298}
+    iPoseRotation: {x: -0.57313484, y: -0.81811213, z: -0.022968503, w: -0.041011997}
     tPoseRotation: {x: 0.04333669, y: -0.9979544, z: -0.04318866, w: -0.018554665}
     tPosePosition: {x: 0.82815856, y: 1.7614353, z: -0.046416104}
   m_characterModel: {fileID: 919132149155446097, guid: 0b5013d150001eb41b1d9b7c01741889, type: 3}

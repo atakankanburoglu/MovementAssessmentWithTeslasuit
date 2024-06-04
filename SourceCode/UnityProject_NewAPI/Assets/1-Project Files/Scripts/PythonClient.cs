@@ -1,38 +1,27 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Threading;
 using UnityEngine;
 using AsyncIO;
 using NetMQ;
 using NetMQ.Sockets;
-using Debug = UnityEngine.Debug;
-using System.IO;
-using Newtonsoft.Json;
 
 
 public class PythonClient
 {
-    private Thread _senderThread;
-    private Thread _receiverThread;
-    private Queue replayInfoQueue = new Queue();
+    private Thread senderThread;
+    private Thread receiverThread;
+    private Queue dataQueue = new Queue();
     private Boolean running = false;
-
-    //private MotionFeedback _motionFeedback;
-    //private MocapJoints _mocapJoints;
-    //private DataGateway _dataGateway;
+    private DataGateway dataGateway;
 
     public PythonClient()
     {
-        //_mocapJoints = MocapJoints.GetInstance();
-        //_motionFeedback = GameObject.Find("Teslasuit_Man").GetComponent<MotionFeedback>();
-        //_dataGateway = GameObject.Find("DataGateway").GetComponent<DataGateway>();
-        _senderThread = new Thread(RunSend);
-        _senderThread.Start();
-        _receiverThread = new Thread(RunReceive);
-        _receiverThread.Start();
+        dataGateway = GameObject.Find("DataGateway").GetComponent<DataGateway>();
+        senderThread = new Thread(RunSend);
+        senderThread.Start();
+        receiverThread = new Thread(RunReceive);
+        receiverThread.Start();
         running = true;
     }
 
@@ -42,21 +31,13 @@ public class PythonClient
         using (PublisherSocket publisher = new PublisherSocket())
         {
             publisher.Bind("tcp://*:5555");
-
             while (running)
             {
-               // string jsonArr = File.ReadAllText(@"C:\StudentProjects\Burakhan\Tesla Suit\Assets\JsonAttempts\burak_Lunge.json");
-                //var player = JsonConvert.DeserializeObject<List<ReplayInfo>>(jsonArr);
-                if (replayInfoQueue.Count > 0)
-                //if (true)
+                if (dataQueue.Count > 0)
                 {
-
-                    ReplayInfo dataToSend = (ReplayInfo)replayInfoQueue.Dequeue();
-                    string json = JsonConvert.SerializeObject(dataToSend, Formatting.Indented);
-                    //string csv = dataToSend.ToCSV(";", filtered: true);
-                    string csv = "Hi python!";
-                    publisher.SendFrame("SuitDataStream " + json);
-                    UnityEngine.Debug.Log("message sent");
+                    FrameDataObject dataToSend = (FrameDataObject)dataQueue.Dequeue();
+                    string frame = dataToSend.ToString();
+                    publisher.SendFrame(frame);
                 }
                 Thread.Sleep(1);
             }
@@ -71,43 +52,26 @@ public class PythonClient
         using (SubscriberSocket subscriber = new SubscriberSocket())
         {
             subscriber.Connect("tcp://localhost:6666");
-            subscriber.Subscribe("ErrorResponseStream");
+            //subscriber.Subscribe("ErrorResponseStream");
+            subscriber.SubscribeToAnyTopic();
 
             while (running)
             {
                 string payload = subscriber.ReceiveFrameString();
-                //String[] values = payload.Split(' ');
-                //string message = values[1];
-                //values = message.Split(',');
+                String[] values = payload.Split(' ');
+                String topic = values[0];
 
-                //PerformanceAnalyzer.GetInstance().DataPointReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
-
-                //Exercise recognizedExercise = (Exercise)Enum.Parse(typeof(Exercise), values[0], true);
-                //if (recognizedExercise != Exercise.Negative)
-                //{
-                //    _dataGateway.recognizedExercise = recognizedExercise;
-                //    Debug.Log($"Recognized: {recognizedExercise}");
-                //}
-
-
-                //int indexOffset = 2;
-                //Dictionary<String, Vector3> motionErrors = new Dictionary<string, Vector3>();
-
-                //for (var i = 0; i < _mocapJoints.JointNames.Count; i++)
-                //{
-                //    Vector3 error = new Vector3(
-                //        float.Parse(values[indexOffset + i * 3], CultureInfo.InvariantCulture),
-                //        float.Parse(values[indexOffset + i * 3 + 1], CultureInfo.InvariantCulture),
-                //        float.Parse(values[indexOffset + i * 3 + 2], CultureInfo.InvariantCulture));
-
-                //    if (!error.Equals(Vector3.zero))
-                //    {
-                //        motionErrors[_mocapJoints.JointNames[i]] = error;
-                //    }
-                //}
-
-                //_motionFeedback.MotionError = motionErrors;
-                //PerformanceAnalyzer.GetInstance().ErrorReceived((int)float.Parse(values[1], CultureInfo.InvariantCulture));
+                if (topic == "RelativeError")
+                {
+                    string exerciseRecognition = values[1];
+                    string directions = values[2];
+                    dataGateway.OnExcerciseRecognized(exerciseRecognition, directions);
+                }
+                if (topic == "ExerciseList")
+                {
+                    string message = values[1];
+                    dataGateway.OnRecordedExercisesListReceived(message);
+                }
                 Thread.Sleep(1);
             }
         }
@@ -115,9 +79,9 @@ public class PythonClient
         NetMQConfig.Cleanup(); // this line is needed to prevent unity freeze after one use, not sure why yet
     }
 
-    public void pushSuitData(ReplayInfo data)
+    public void PushData(FrameDataObject data)
     {
-        replayInfoQueue.Enqueue(data);
+        dataQueue.Enqueue(data);
     }
 
     public void Stop()
@@ -125,7 +89,7 @@ public class PythonClient
         running = false;
         // block main thread, wait for _runnerThread to finish its job first, so we can be sure that 
         // _runnerThread will end before main thread end
-        _senderThread.Join();
-        _receiverThread.Join();
+        senderThread.Join();
+        receiverThread.Join();
     }
 }

@@ -1,0 +1,11 @@
+\textbf{Excluded \ac{IMU} Measurement Set} & \textbf{Algorithm} & \textbf{$t_{gyro}$} & \textbf{Mean R² score} \\\hline \midrule 
+6x-Accel & NN & 0.308 & 0.315 & 0.007\\ 
+6x-Accel & RF & 0.343 & 0.351 & 0.008\\ 
+6x-accel & NN & 0.309 & 0.309 & 0.0\\ 
+6x-accel & RF & 0.343 & 0.351 & 0.008\\ 
+9x-Accel & NN & 0.299 & 0.298 & 0.001\\ 
+9x-Accel & RF & 0.343 & 0.351 & 0.008\\ 
+9x-accel & NN & 0.301 & 0.296 & 0.005\\ 
+9x-accel & RF & 0.343 & 0.351 & 0.008\\ 
+accel-Accel & NN & 0.406 & 0.407 & 0.001\\ 
+accel-Accel & RF & 0.44 & 0.442 & 0.002\\ 

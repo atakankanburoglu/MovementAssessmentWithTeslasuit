@@ -1,0 +1,1 @@
+\textbf{Excluded \ac{IMU} Measurement Set} & \textbf{Algorithm} & \textbf{$t_{gyro}$} & \textbf{Mean R² score} \\\hline \midrule 

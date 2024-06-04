@@ -53,6 +53,8 @@ public abstract class TsMotionProvider : MonoBehaviour
     /// <returns><see cref="ISkeleton"/>Mocap skeleton interface</returns>
     public abstract ISkeleton GetSkeleton(float time = 0.0f);
 
+    //*
+    public abstract IImuData GetImuData(float time = 0.0f);
     /// <summary>
     /// Calibrates skeleton model by known pose, depending on the device that provides the data.
     /// </summary>

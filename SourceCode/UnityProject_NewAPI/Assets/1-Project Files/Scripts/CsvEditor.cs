@@ -131,11 +131,11 @@ public class CsvEditor
             replayInfos.Add(replayInfo);
 
         }
-        ReplayObject replayObject = new ReplayObject("deneme", replayInfos,TrainingTypes.Lunge);
+        ReplayObject replayObject = new ReplayObject("deneme", replayInfos,ExerciseType.PLANKHOLD);
         string json = JsonConvert.SerializeObject(replayObject.replayInfo.ToArray(), Formatting.Indented);
 
         //write string to file
-        System.IO.File.WriteAllText(string.Concat(@"C:\StudentProjects\Burakhan\Tesla Suit\Assets\JsonAttempts\\", $"{replayObject.subjectName}", ".json"), json);
+        System.IO.File.WriteAllText(string.Concat(@"C:\Users\Camil\Documents\Uni\Master\Thesis\Code\MovementAssessmentWithTeslasuit\SourceCode\UnityProject_NewAPI\Assets\JsonAttempts\csv\\", $"{replayObject.subjectName}", ".json"), json);
     }
 
     public static MyQuaternion CSVtoMyQuaternion(string w, string x, string y, string z)

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TsAPI.Types;
 using TsSDK;
+using UnityEditor;
 using UnityEngine;
 //* marked places are where i have added something.
 
@@ -12,31 +14,25 @@ public class TsHumanAnimator : MonoBehaviour
 
     [SerializeField]
     private TsAvatarSettings m_avatarSettings;
-    public bool IPose = false;
+
+    public bool IPose = true;
 
     private TsHumanBoneIndex m_rootBone = TsHumanBoneIndex.Hips;
     private Dictionary<TsHumanBoneIndex, Transform> m_bonesTransforms = new Dictionary<TsHumanBoneIndex, Transform>();
     //*
     public Dictionary<TsHumanBoneIndex, Transform> BoneTransforms { get { return m_bonesTransforms; } }
     //*
+    private Dictionary<TsHumanBoneIndex, TsImuSensorData> m_imuData = new Dictionary<TsHumanBoneIndex, TsImuSensorData>();
+    //*
+    public Dictionary<TsHumanBoneIndex, TsImuSensorData> ImuData { get { return m_imuData; } }
+    //*
     public bool Replay;
     //*
-    float IPoseTimer;
-    //*
-    float? firstHipPosition;
-    //*
-    private SkinnedMeshRenderer _meshRenderer;
-    //* 
-    private DataGateway dataGateway;
-
-
-
+    public GameObject ErrorArrow;
+    private Dictionary<TsHumanBoneIndex, GameObject> m_errorArrows = new Dictionary<TsHumanBoneIndex, GameObject>();
+    private Dictionary<TsHumanBoneIndex, Vector3> m_errorArrowsTransform = new Dictionary<TsHumanBoneIndex, Vector3>();
     private void Start()
     {
-        int i = FindObjectsOfType<TsHumanAnimator>().Length;
-
-        dataGateway = FindObjectOfType<DataGateway>();
-
         if (m_avatarSettings == null)
         {
             Debug.LogError("Missing avatar settings for this character.");
@@ -52,194 +48,122 @@ public class TsHumanAnimator : MonoBehaviour
         }
 
         SetupAvatarBones();
-        _meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
+        SetupErrorArrows();
     }
 
     private void SetupAvatarBones()
     {
         foreach (var reqBoneIndex in TsHumanBones.SuitBones)
-        {            
+        {
             var transformName = m_avatarSettings.GetTransformName(reqBoneIndex);
-            //*
-            //There is a problem with EthanSpine2. Recursive algorithm has failed to find it.
-            //This part of the code is a temporary quick fix.
-            Transform boneTransform;
-            if (reqBoneIndex == TsHumanBoneIndex.UpperSpine)
-            {
-                // original ->
-                boneTransform = transform.Find("EthanSkeleton/EthanHips/EthanSpine/EthanSpine1/EthanSpine2");
-              //  boneTransform = TransformUtils.FindChildRecursive(transform, transformName);
-
-            }
-            else
-            {
-                boneTransform = TransformUtils.FindChildRecursive(transform, transformName);
-               
-            }
-            
+            var boneTransform = TransformUtils.FindChildRecursive(transform, transformName);
             if (boneTransform != null && !m_bonesTransforms.ContainsKey(reqBoneIndex))
             {
                 m_bonesTransforms.Add(reqBoneIndex, boneTransform);
             }
         }
+    }
 
-        ////*
-        //foreach (KeyValuePair<TsHumanBoneIndex, Transform> kvp in m_bonesTransforms)
-        //{
-        //    //Debug.Log("index: " + (int)kvp.Key + " pos: " + kvp.Value.position + " pos: " + kvp.Value.rotation);
-        //    Debug.Log("index: " + kvp.Key);
-        //}
+    private void SetupErrorArrows()
+    {
+        foreach (var reqBoneIndex in TsHumanBones.SuitBones)
+        {
+            if (!m_errorArrows.ContainsKey(reqBoneIndex))
+            {
+                m_errorArrows.Add(reqBoneIndex, Instantiate(ErrorArrow));
+            }
+        }
     }
 
     // Update is called once per frame
     private void Update()
     {
         var skeleton = m_motionProvider.GetSkeleton(Time.time);
-
         //*
-
-        ReplayObject rO = new ReplayObject { };
-
+        var imuData = m_motionProvider.GetImuData(Time.time);
         //*
-        //if replay is true, character will be replayed by TsReplaySaver script
-        if(!Replay) Update(skeleton);
-        
+        if(!Replay) Update(skeleton, imuData);
     }
 
    
-    private void Update(ISkeleton skeleton)
+    private void Update(ISkeleton skeleton, IImuData imuData)
     {
-        
 
         if (skeleton == null)
         {
             return;
         }
-        #region Quaternion
-        //Original- Quaternion
         foreach (var boneIndex in TsHumanBones.SuitBones)
         {
             var poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
             var targetRotation = Conversion.TsRotationToUnityRotation(skeleton.GetBoneTransform(boneIndex).rotation);
 
-           // if (boneIndex != TsHumanBoneIndex.Hips) //dont understand why this is here-> breaks the hips rotation of imported models.
-           //proly because hips is not being found in recursive search. we had placd it for ethan ourselves.
-                TryDoWithBone(boneIndex, (boneTransform) =>
-                {
-                    boneTransform.rotation = targetRotation * poseRotation;
-                    //*
-                   // boneTransform.position = Conversion.TsVector3ToUnityVector3(skeleton.GetBoneTransform(boneIndex).position);
-                });
+            TryDoWithBone(boneIndex, (boneTransform) =>
+            {
+                boneTransform.rotation = targetRotation * poseRotation;
+            });
+            //*
+            if (m_imuData.ContainsKey(boneIndex))
+            {
+                m_imuData[boneIndex] = imuData.GetSensorData(boneIndex);
+            }
+            else
+            {
+                m_imuData.Add(boneIndex, imuData.GetSensorData(boneIndex));
+            }
+            
+            if (m_errorArrowsTransform.Count != 0)
+            {
+                if(boneIndex == TsHumanBoneIndex.Hips && m_errorArrowsTransform.TryGetValue(boneIndex, out var v3)){
+                    SetErrorArrow(boneIndex, v3, skeleton.GetBoneTransform(TsHumanBoneIndex.Hips), skeleton.GetBoneTransform(boneIndex));
+
+                }
+            }
 
         }
-        //Set hips(rootbone) as main position of model
+
         TryDoWithBone(m_rootBone, (boneTransform) =>
         {
             var hipsPos = skeleton.GetBoneTransform(TsHumanBoneIndex.Hips).position;
             boneTransform.transform.position = Conversion.TsVector3ToUnityVector3(hipsPos);
         });
 
-        #endregion
-        #region Position+Rotation
-        ////Pos+rot
-        //foreach (var boneIndex in TsHumanBones.SuitBones)
-        //{
-        //    var poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
-        //    var targetPosition = Conversion.TsVector3ToUnityVector3(skeleton.GetBoneTransform(boneIndex).position);
-        //    var targetRotation = Conversion.TsRotationToUnityRotation(skeleton.GetBoneTransform(boneIndex).rotation).eulerAngles;
-        //    ////var targetRotation = Quaternion.identity; 
-        //    //if (ri.replayRotation.ContainsKey(boneIndex))
-        //    //{
-        //    //    poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
-        //    //    targetRotation = ri.replayRotation[boneIndex];
-        //    //}
-        //    //else
-        //    //{
-        //    //    //Debug.Log("bulunamadi: " + boneIndex.ToString());
-        //    //    continue;
-        //    //}
-
-        //    TryDoWithBone(boneIndex, (boneTransform) =>
-        //    {
-        //        boneTransform.rotation = Quaternion.Euler(targetRotation.x, targetRotation.y, targetRotation.z);
-        //        boneTransform.position = targetPosition;
-        //    });
-        //}
-
-        //TryDoWithBone(m_rootBone, (boneTransform) =>
-        //{
-        //    // var hipsPos = m_motionProvider.GetSkeleton(Time.time).GetBoneTransform(TsHumanBoneIndex.Hips).position;
-        //    // boneTransform.transform.position = ri.replayPosition[TsHumanBoneIndex.Hips];
-        //});
-        #endregion
         if (IPose)
         {
-            //*
-            IPoseTimer += Time.deltaTime;
-            if (IPoseTimer > 3)
-            {
-                Calibrate();
-                IPose = false;
-                IPoseTimer = 0;
-            }
-            
+            m_motionProvider.Calibrate();
+            IPose = false;
         }
-        //*
-        // Calibrate();
+        
     }
-    public void SetIPose()
+
+    //*
+    public void SetErrorArrow(TsHumanBoneIndex currentBoneIndex, Vector3 v3, TsTransform boneTransformHips, TsTransform boneTransform)
     {
-        IPose = true;
+        if (m_errorArrows.TryGetValue(currentBoneIndex, out GameObject errorArrow))
+        {
+            errorArrow.transform.position = Conversion.TsVector3ToUnityVector3(boneTransform.position);
+            Vector3 toLookAtMagn = new Vector3(boneTransform.position.x + (-v3.x), boneTransform.position.y + v3.y, boneTransform.position.z + (-v3.z));
+            errorArrow.transform.LookAt(toLookAtMagn);
+            errorArrow.transform.rotation = Quaternion.FromToRotation(Conversion.TsVector3ToUnityVector3(boneTransform.position), toLookAtMagn);
+            errorArrow.SetActive(true);
+        }
+
     }
+
     public void Calibrate()
     {
+        print("Calibrate");
         m_motionProvider?.Calibrate();
     }
     //*
     public void ReplayUpdate(ReplayInfo ri)
     {
-        ////pos + euler rot(Uncomment this section if you want to replay using both positions(vec3) and rotations(vec3) )
-        //foreach (var boneIndex in TsHumanBones.SuitBones)
-        //{
-        //    var poseRotation = Quaternion.identity;
-        //    var targetRotation = Vector3.zero;
-        //    //var targetRotation = Quaternion.identity; 
-        //   if (ri.replayRotation.ContainsKey(boneIndex))
-        //    {
-        //        poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
-        //        targetRotation = ri.replayRotation[boneIndex];
-        //    }
-        //    else
-        //    {
-        //        //Debug.Log("bulunamadi: " + boneIndex.ToString());
-        //        continue;
-        //    }
-
-        //    TryDoWithBone(boneIndex, (boneTransform) =>
-        //    {
-        //        boneTransform.rotation = Quaternion.Euler( targetRotation.x, targetRotation.y, targetRotation.z);
-        //        boneTransform.position = ri.replayPosition[boneIndex];
-        //    });
-        //}
-
-        //TryDoWithBone(m_rootBone, (boneTransform) =>
-        //{
-        //   // var hipsPos = m_motionProvider.GetSkeleton(Time.time).GetBoneTransform(TsHumanBoneIndex.Hips).position;
-        //   // boneTransform.transform.position = ri.replayPosition[TsHumanBoneIndex.Hips];
-        //});
-
-        //quaternion
         foreach (var boneIndex in TsHumanBones.SuitBones)
         {
-            //var poseRotation = m_avatarSettings.GetIPoseRotation(boneIndex);
             MyQuaternion my;
             Quaternion targetRotation;
             if (ri.replayRotationQuaternion.TryGetValue(boneIndex, out my))
             {
-                if (boneIndex == TsHumanBoneIndex.Hips)
-                {
-                    targetRotation = Inverse(MyQuaternion.ConvertToQuat(my),true,true,true);
-                }else
                 targetRotation = MyQuaternion.ConvertToQuat(my);
             }
             else continue;
@@ -255,40 +179,6 @@ public class TsHumanAnimator : MonoBehaviour
             boneTransform.transform.position = ri.replayPosition[TsHumanBoneIndex.Hips];
         });
 
-        //Debug.Log(ri.replayPosition[TsHumanBoneIndex.Hips].y);
-        //TryDoWithBone(m_rootBone, (boneTransform) =>
-        //{
-        //    if (ri.replayPosition[TsHumanBoneIndex.Hips].y < 1)
-        //    {
-        //        boneTransform.transform.position = ri.replayPosition[TsHumanBoneIndex.Hips];
-
-        //    }
-        //    else
-        //    {
-        //        boneTransform.transform.position = new Vector3(ri.replayPosition[TsHumanBoneIndex.Hips].x, 1, ri.replayPosition[TsHumanBoneIndex.Hips].z);
-        //    }
-
-        //});
-
-        //if (firstHipPosition.HasValue)
-        //{
-        //    TryDoWithBone(m_rootBone, (boneTransform) =>
-        //    {
-        //        // if(ri.replayPosition[TsHumanBoneIndex.Hips].y<1)
-        //        boneTransform.transform.position = new Vector3(ri.replayPosition[TsHumanBoneIndex.Hips].x,
-        //            Mathf.Lerp(firstHipPosition.Value, ri.replayPosition[TsHumanBoneIndex.Hips].y,Time.deltaTime*0.1f),
-        //            ri.replayPosition[TsHumanBoneIndex.Hips].z);
-        //        firstHipPosition = boneTransform.position.y;
-
-        //    });
-
-        //}
-        //else
-        //{
-        //    firstHipPosition = ri.replayPosition[TsHumanBoneIndex.Hips].y;
-        //}       
-
-
     }
 
     private void TryDoWithBone(TsHumanBoneIndex boneIndex, Action<Transform> action)
@@ -301,7 +191,49 @@ public class TsHumanAnimator : MonoBehaviour
         action(boneTransform);
     }
 
+
     //*
+    public void ShowErrors(String errors)
+    {
+        List<TsHumanBoneIndex> errorIndexes = new List<TsHumanBoneIndex>();
+        string pattern = @"{[^()]*}|[^()]+";
+        MatchCollection matches = Regex.Matches(errors, pattern);
+        foreach (Match m in matches)
+        {
+            String[] entry = m.Value.Split(',');
+            if (entry.Length == 5)
+            {
+                TsHumanBoneIndex currentBoneIndex = (TsHumanBoneIndex)Enum.Parse(typeof(TsHumanBoneIndex), entry[0]);
+                float.TryParse(entry[1], System.Globalization.NumberStyles.Number, null, out float value1);
+                float.TryParse(entry[2], System.Globalization.NumberStyles.Number, null, out float value2);
+                float.TryParse(entry[3], System.Globalization.NumberStyles.Number, null, out float value3);
+                //float.TryParse(entry[4], System.Globalization.NumberStyles.Number, null, out float angle);
+                Vector3 direction = new Vector3(value1, value2, value3);
+                if (m_errorArrowsTransform.ContainsKey(currentBoneIndex))
+                {
+                    m_errorArrowsTransform[currentBoneIndex] = direction;
+                }
+                else
+                {
+                    m_errorArrowsTransform.Add(currentBoneIndex, direction);
+                }
+                errorIndexes.Add(currentBoneIndex);
+            }
+        }
+
+        foreach (var boneIndex in TsHumanBones.SuitBones)
+        {
+            if (!errorIndexes.Contains(boneIndex))
+            {
+                if (m_errorArrows.TryGetValue(boneIndex, out GameObject errorArrow))
+                {
+                    errorArrow.SetActive(false);
+                }
+            }
+        }
+    }
+
+
     private void OnDrawGizmos()
     {
         Color blue = new Color(0, 0, 1, 125);

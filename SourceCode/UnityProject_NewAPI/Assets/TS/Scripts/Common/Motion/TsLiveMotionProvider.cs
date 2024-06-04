@@ -67,7 +67,27 @@ public class TsLiveMotionProvider : TsMotionProvider
 
     public override ISkeleton GetSkeleton(float time = 0)
     {
-        return m_mocap?.Skeleton;
+        if(m_mocap != null)
+        {
+            return m_mocap?.Skeleton;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    //*
+    public override IImuData GetImuData(float time = 0)
+    {
+        if (m_mocap != null)
+        {
+            return m_mocap?.ImuData;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public override void Calibrate()
