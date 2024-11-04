@@ -1,5 +1,7 @@
 public enum ExerciseType
 {
+    GLUTEBRIDGE,
+    WALLSIT,
     PLANKHOLD,
     SIDEPLANKRIGHT,
     SIDEPLANKLEFT,

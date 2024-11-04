@@ -5,3 +5,5 @@ class ExerciseType(Enum):
     SIDEPLANKRIGHT = 2
     SIDEPLANKLEFT = 3
     FULLSQUAT = 4
+    WALLSIT = 5
+    GLUTEBRIDGE = 6
