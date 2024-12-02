@@ -22,49 +22,45 @@ def get_imu_data_with_misalignment():
             'LeftHand': {'x': 0.5, 'y': 1.6, 'z': 0.0},
             'RightHand': {'x': -0.5, 'y': 1.6, 'z': 0.0}
         },
-        'replayRotation': {
-            'Hips': {'x': 0.0, 'y': 0.0, 'z': 0.0},
-            'LeftUpperLeg': {'x': 0.1, 'y': 0.1, 'z': 0.1},
-            'RightUpperLeg': {'x': -0.1, 'y': 0.1, 'z': 0.1},
-            'LeftLowerLeg': {'x': 0.2, 'y': 0.2, 'z': 0.2},
-            'RightLowerLeg': {'x': -0.2, 'y': 0.2, 'z': 0.2},
-            'LeftFoot': {'x': 0.3, 'y': 0.3, 'z': 0.3},
-            'RightFoot': {'x': -0.3, 'y': 0.3, 'z': 0.3},
-            'Spine': {'x': 0.0, 'y': 0.0, 'z': 0.0},
-            'Chest': {'x': 0.1, 'y': 0.1, 'z': 0.1},
-            'LeftShoulder': {'x': 0.2, 'y': 0.2, 'z': 0.2},
-            'RightShoulder': {'x': -0.2, 'y': 0.2, 'z': 0.2},
-            'LeftUpperArm': {'x': 0.3, 'y': 0.3, 'z': 0.3},
-            'RightUpperArm': {'x': -0.3, 'y': 0.3, 'z': 0.3},
-            'LeftLowerArm': {'x': 0.4, 'y': 0.4, 'z': 0.4},
-            'RightLowerArm': {'x': -0.4, 'y': 0.4, 'z': 0.4},
-            'LeftHand': {'x': 0.5, 'y': 0.5, 'z': 0.5},
-            'RightHand': {'x': -0.5, 'y': 0.5, 'z': 0.5}
-        }
+        'replayRotation': {joint: {'x': 0.0, 'y': 0.0, 'z': 0.0} for joint in [
+            'Hips', 'LeftUpperLeg', 'RightUpperLeg', 'LeftLowerLeg', 'RightLowerLeg',
+            'LeftFoot', 'RightFoot', 'Spine', 'Chest', 'LeftShoulder', 'RightShoulder',
+            'LeftUpperArm', 'RightUpperArm', 'LeftLowerArm', 'RightLowerArm', 'LeftHand', 'RightHand'
+        ]}
     }
+    return imu_data
 
-    imu_data['replayRotation']['Hips'] = {'x': 0.2, 'y': 0.0, 'z': 0.0}  # Fehlstellung hinzufügen
-
+# Beispiel: IMU-Daten ohne Fehlstellung generieren
+def get_correct_imu_data():
+    imu_data = {
+        'replayPosition': {joint: {'x': 0.0, 'y': 1.0, 'z': 0.0} for joint in [
+            'Hips', 'LeftUpperLeg', 'RightUpperLeg', 'LeftLowerLeg', 'RightLowerLeg',
+            'LeftFoot', 'RightFoot', 'Spine', 'Chest', 'LeftShoulder', 'RightShoulder',
+            'LeftUpperArm', 'RightUpperArm', 'LeftLowerArm', 'RightLowerArm', 'LeftHand', 'RightHand'
+        ]},
+        'replayRotation': {joint: {'x': 0.0, 'y': 0.0, 'z': 0.0} for joint in [
+            'Hips', 'LeftUpperLeg', 'RightUpperLeg', 'LeftLowerLeg', 'RightLowerLeg',
+            'LeftFoot', 'RightFoot', 'Spine', 'Chest', 'LeftShoulder', 'RightShoulder',
+            'LeftUpperArm', 'RightUpperArm', 'LeftLowerArm', 'RightLowerArm', 'LeftHand', 'RightHand'
+        ]}
+    }
     return imu_data
 
 def test_feedback_system():
     model_path = "/Users/mac113/Desktop/Personal/MovementAssessmentWithTeslasuit/SourceCode/PythonFiles__MovementAssessmentWithTeslasuit/model/SVM_model.pkl"
-    try:
-        feedback_system = Feedback(model_path=model_path)
-        print("Feedback-System wurde erstellt")
-    except Exception as e:
-        print(f"Fehler beim Erstellen des Feedback-Systems: {e}")
-        return
+    feedback_system = Feedback(model_path=model_path)
 
-    # IMU-Daten mit Fehlstellung generieren
+    # Test 1: Mit Fehlstellung
+    print("\n--- Test 1: Fehlstellung ---")
     imu_data_with_misalignment = get_imu_data_with_misalignment()
+    misalignment_detected = feedback_system.detect_misalignment(imu_data_with_misalignment)
+    print("Fehlstellung erkannt:", misalignment_detected)
 
-    try:
-        # Fehlstellung erkennen
-        misalignment_detected = feedback_system.detect_misalignment(imu_data_with_misalignment)
-        print(f"Fehlstellung erkannt: {misalignment_detected}")
-    except Exception as e:
-        print(f"Fehler bei der Fehlstellungserkennung: {e}")
+    # Test 2: Ohne Fehlstellung
+    print("\n--- Test 2: Keine Fehlstellung ---")
+    correct_imu_data = get_correct_imu_data()
+    misalignment_detected = feedback_system.detect_misalignment(correct_imu_data)
+    print("Fehlstellung erkannt:", misalignment_detected)
 
 # Die Funktion test_feedback_system ausführen
 if __name__ == "__main__":

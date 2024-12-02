@@ -17,9 +17,15 @@ from enums.ApplicationMode import ApplicationMode
 from core.ImuData import ImuData
 from core.SampleData import SampleData
 from core.ModelData import ModelData
-from Feedback import Feedback  # Import the Feedback class
+from Feedback import Feedback
+
 
 class DataGateway:
+    def __init__(self):
+        # Feedback-System initialisieren
+        model_path = "/Users/mac113/Desktop/Personal/MovementAssessmentWithTeslasuit/SourceCode/PythonFiles__MovementAssessmentWithTeslasuit/model/SVM_model.pkl"  # Absoluter Pfad zum Modell
+        self.feedback = Feedback(model_path)
+
     def process_received_frame(self, topic, state, payload):
         if topic == "Recording":
             if state == "INIT":
@@ -58,6 +64,27 @@ class DataGateway:
                 model_data = ModelData("1-14-"+filename[0], "", payload[2], 10, payload[3], 0)
                 self.on_testing_recorded(model_data, f)
 
+        # Neu hinzugefügtes Topic: Feedback
+        if topic == "Feedback":
+            return self.process_feedback_request(payload)
+
+    def process_feedback_request(self, payload):
+        """
+        Verarbeitet Feedback-Anfragen basierend auf IMU-Daten.
+        """
+        print("Feedback-Anfrage erhalten...")
+
+        imu_data = {
+            'replayPosition': payload  # Angenommen, das Payload enthält die Positionsdaten
+        }
+
+        # Feedback-Logik aufrufen
+        misalignment_detected, misaligned_joints = self.feedback.detect_misalignment(imu_data)
+        feedback_message = self.feedback.generate_feedback_message(misaligned_joints)
+
+        print(f"Feedback-Nachricht: {feedback_message}")
+        return feedback_message
+
     def on_imu_data_stream(self, imu_data, application_mode):
         if application_mode == "Recording":
             self.dataRecorder.log_data(imu_data)
@@ -69,12 +96,6 @@ class DataGateway:
             if exercise_recognition != None:
                 error = self.modelTester.get_feedback_from_model(exercise_recognition, testing_df.T)
                 directions = ModelEvaluator.error_to_direction(self.modelTester.model_data, error)
-
-                # Implement Feedback logic for misalignment detection
-                feedback = Feedback()  # Create an instance of Feedback
-                misalignment_detected = feedback.detect_misalignment(imu_data)  # Detect misalignment
-                feedback_message = feedback.generate_feedback(misalignment_detected)  # Generate feedback
-
                 return exercise_recognition + " " + directions + " " + feedback_message  # Append feedback
             else:
                 return exercise_recognition

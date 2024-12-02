@@ -1,6 +1,5 @@
 import threading
 import time
-import numpy as np
 import zmq
 
 
@@ -21,32 +20,55 @@ class Server:
         self.threadsRunning = False
 
     def receive_thread(self):
+        """
+        Empfangsthread: Verarbeitet eingehende Nachrichten.
+        """
         print("Receive Thread Started")
         while self.threadsRunning:
-            #  Wait for next request from client
-            message = self.receive_socket.recv(copy=True)
-            t = time.process_time()
-            topic, payload = message.split()
-            string_topic = str(topic, "utf-8")
-            string_payload = str(payload, "utf-8")
-            print(string_topic + " received")
-            string_payload_split = string_payload.split(";")
-            send_data = self.dataGateway.process_received_frame(string_topic, string_payload_split[0], string_payload_split[1:])
-            if send_data != None:
-                self.queue.append(send_data)
+            # Warten auf die nächste Nachricht vom Client
+            try:
+                message = self.receive_socket.recv(copy=True)
+                topic, payload = message.split()
+                string_topic = topic.decode("utf-8")
+                string_payload = payload.decode("utf-8")
+
+                print(f"Nachricht empfangen: Topic={string_topic}, Payload={string_payload}")
+
+                # Aufteilen der Payload und Verarbeiten der Nachricht
+                string_payload_split = string_payload.split(";")
+                send_data = self.dataGateway.process_received_frame(string_topic, string_payload_split[0],
+                                                                    string_payload_split[1:])
+
+                # Daten in die Warteschlange legen
+                if send_data is not None:
+                    self.queue.append(send_data)
+
+            except Exception as e:
+                print(f"Fehler beim Empfang der Nachricht: {e}")
+
         print("Receive Thread Stopped")
 
     def send_thread(self):
+        """
+        Sende-Thread: Senden von Nachrichten an den Client.
+        """
         print("Send Thread Started")
         while self.threadsRunning:
-            if len(self.queue) > 0:
-                result = self.queue.pop(0)
-                self.send_socket.send_string(result)
-                print("Send data")
-            time.sleep(0.001)
+            try:
+                if len(self.queue) > 0:
+                    result = self.queue.pop(0)
+                    self.send_socket.send_string(result)
+                    print(f"Daten gesendet: {result}")
+                time.sleep(0.001)
+            except Exception as e:
+                print(f"Fehler beim Senden der Nachricht: {e}")
+
         print("Send Thread Stopped")
 
     def start(self):
+        """
+        Startet die Threads zum Empfangen und Senden von Nachrichten.
+        """
         self.threadsRunning = True
         self.thread1 = threading.Thread(target=self.receive_thread)
         self.thread1.start()
@@ -54,13 +76,11 @@ class Server:
         self.thread2.start()
 
     def stop(self):
+        """
+        Beendet die Threads.
+        """
         self.threadsRunning = False
-        self.thread1.join()
-        self.thread2.join()
-
-        
-
-
-
-
-
+        if self.thread1:
+            self.thread1.join()
+        if self.thread2:
+            self.thread2.join()
