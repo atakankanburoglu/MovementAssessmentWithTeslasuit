@@ -3,14 +3,15 @@ import threading
 import json
 import time
 from core.Feedback import Feedback
+import os
 
 class Server:
-    def __init__(self, dataGateway, host='127.0.0.1', port=6667, model_path='SourceCode\PythonFiles__MovementAssessmentWithTeslasuit\model\GLUTEBRIDGE\SVM_model.pkl'):
+    def __init__(self, dataGateway, host='127.0.0.1', port=6667, model_base_path='SourceCode/PythonFiles__MovementAssessmentWithTeslasuit/model'):
         self.dataGateway = dataGateway
         self.host = host
         self.port = port
-        self.model_path = model_path
-        self.feedback = Feedback(self.model_path)
+        self.model_base_path = model_base_path
+        self.feedback = None  # Feedback wird dynamisch initialisiert
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)
@@ -44,9 +45,43 @@ class Server:
             client_socket.close()
 
     def process_data(self, data, client_socket):
-        feedback = self.feedback.detect_misalignment(data)
-        print(feedback)
-        client_socket.sendall(feedback.encode("utf-8"))
+        try:
+            exercise_type = data.get("exerciseType", "")
+            model_name = data.get("model", "")
+
+            # Dynamischen Modellpfad bestimmen
+            model_path = os.path.join(self.model_base_path, exercise_type, f"{model_name}_model.pkl")
+
+            if not os.path.exists(model_path):
+                error_message = f"Modell nicht gefunden: {model_path}"
+                print(error_message)
+                client_socket.sendall(error_message.encode("utf-8"))
+                return
+
+            # Feedback-Instanz mit dem richtigen Modell initialisieren
+            self.feedback = Feedback(model_path)
+            misalignment_status = self.feedback.detect_misalignment(data)  # Fehlstellung prüfen
+            deviations = self.feedback.detect_deviations(data)  # Liefert detaillierte Abweichungen
+
+            # Deviation-Daten zusammenstellen
+            deviation_messages = []
+            for joint, deviation in deviations.items():
+                deviation_messages.append({
+                    "joint": joint,
+                    "deviation": deviation["vector"],
+                    "intensity": deviation["intensity"]
+                })
+
+            # Rückmeldung erstellen
+            response = {
+                "misalignmentStatus": misalignment_status,
+                "deviations": deviation_messages
+            }
+            client_socket.sendall((json.dumps(response) + "\nEND_OF_JSON\n").encode("utf-8"))
+        except Exception as e:
+            error_message = f"Fehler beim Verarbeiten der Daten: {e}"
+            print(error_message)
+            client_socket.sendall(error_message.encode("utf-8"))
 
     def start(self):
         while self.threadsRunning:
