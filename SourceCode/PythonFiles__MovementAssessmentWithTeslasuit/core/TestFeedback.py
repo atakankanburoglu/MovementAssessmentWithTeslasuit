@@ -1,4 +1,4 @@
-from Feedback import Feedback  # Importiere die Feedback-Klasse
+from core.Feedback import Feedback  # Importiere die Feedback-Klasse
 
 # Beispiel: IMU-Daten mit Fehlstellung generieren
 def get_imu_data_with_misalignment():

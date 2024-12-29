@@ -17,15 +17,10 @@ from enums.ApplicationMode import ApplicationMode
 from core.ImuData import ImuData
 from core.SampleData import SampleData
 from core.ModelData import ModelData
-from Feedback import Feedback
+from core.Feedback import Feedback
 
 
 class DataGateway:
-    def __init__(self):
-        # Feedback-System initialisieren
-        model_path = "/Users/mac113/Desktop/Personal/MovementAssessmentWithTeslasuit/SourceCode/PythonFiles__MovementAssessmentWithTeslasuit/model/SVM_model.pkl"  # Absoluter Pfad zum Modell
-        self.feedback = Feedback(model_path)
-
     def process_received_frame(self, topic, state, payload):
         if topic == "Recording":
             if state == "INIT":

@@ -16,7 +16,7 @@ def load_json_data(file_path):
     return data
 
 # Funktion zur Augmentierung der Daten
-def augment_data(data, angle_range=(-10, 10), translation_range=(-0.1, 0.1)):
+def augment_data(data, angle_range=(-10, 10), translation_range=(-0.1, 0.1), scale_range=(0.9, 1.1)):
     augmented_data = []
 
     for frame in data:
@@ -34,9 +34,12 @@ def augment_data(data, angle_range=(-10, 10), translation_range=(-0.1, 0.1)):
             pos_y = pos['y'] + random.uniform(*translation_range)
             pos_z = pos['z'] + random.uniform(*translation_range)
 
-            # Rotation um die Z-Achse
-            angle = random.uniform(*angle_range)
-            rotation = R.from_euler('z', angle, degrees=True)
+            # Zufällige Rotation um alle drei Achsen
+            rotation_x = random.uniform(*angle_range)
+            rotation_y = random.uniform(*angle_range)
+            rotation_z = random.uniform(*angle_range)
+            rotation = R.from_euler('xyz', [rotation_x, rotation_y, rotation_z], degrees=True)
+
             rotated_pos = rotation.apply([pos_x, pos_y, pos_z])
 
             augmented_frame['replayPosition'][joint] = {
@@ -44,6 +47,15 @@ def augment_data(data, angle_range=(-10, 10), translation_range=(-0.1, 0.1)):
                 'y': rotated_pos[1],
                 'z': rotated_pos[2]
             }
+
+            # Optional: Skalierung der Position für noch mehr Variation
+            scale_factor = random.uniform(*scale_range)
+            augmented_frame['replayPosition'][joint] = {
+                'x': augmented_frame['replayPosition'][joint]['x'] * scale_factor,
+                'y': augmented_frame['replayPosition'][joint]['y'] * scale_factor,
+                'z': augmented_frame['replayPosition'][joint]['z'] * scale_factor
+            }
+
             augmented_frame['replayRotation'][joint] = rot  # Rotation unverändert
 
         augmented_data.append(augmented_frame)

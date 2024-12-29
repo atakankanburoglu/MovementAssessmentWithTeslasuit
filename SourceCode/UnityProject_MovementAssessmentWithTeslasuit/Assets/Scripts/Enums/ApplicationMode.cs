@@ -4,7 +4,8 @@
     Recording,
     Replay,
     Training,
-    Testing
+    Testing,
+    Feedback
 }
 
 

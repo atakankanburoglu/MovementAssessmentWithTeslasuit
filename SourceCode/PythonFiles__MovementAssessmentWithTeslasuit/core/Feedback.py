@@ -1,56 +1,21 @@
-import pickle
-import os
-
+import joblib
+import numpy as np
 
 class Feedback:
     def __init__(self, model_path):
-        # Überprüfen, ob der angegebene Pfad existiert
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Das Modell unter {model_path} konnte nicht gefunden werden.")
-        print(f"Versuche, Modell von {model_path} zu laden...")
         self.model = self.load_model(model_path)
 
     def load_model(self, model_path):
-        try:
-            # Modell mit pickle laden
-            with open(model_path, 'rb') as f:
-                model = pickle.load(f)
-                print(f"Modell erfolgreich geladen: {type(model)}")
-            return model
-        except Exception as e:
-            print(f"Fehler beim Laden des Modells: {str(e)}")
-            raise e
+        with open(model_path, 'rb') as f:
+            return joblib.load(f)
 
-    def detect_misalignment(self, imu_data):
-        """
-        Überprüft die IMU-Daten auf Fehlstellungen im Vergleich zu einem Standardmodell.
-        """
-        print("Erkenne Fehlstellung...")
-        misalignment_detected = False
-        misaligned_joints = []
+    def detect_misalignment(self, data):
+        input_vector = []
+        for joint, values in data["replayPosition"].items():
+            input_vector.extend([values["x"], values["y"], values["z"]])
+        for joint, values in data["replayRotation"].items():
+            input_vector.extend([values["x"], values["y"], values["z"]])
 
-        for joint, position in imu_data['replayPosition'].items():
-            # Beispiel für korrekte Standardpositionen (können angepasst werden)
-            correct_position = {'x': 0.0, 'y': 1.0, 'z': 0.0}
-
-            # Überprüfung der Abweichung
-            deviation = {axis: abs(position[axis] - correct_position[axis]) for axis in ['x', 'y', 'z']}
-            threshold = 0.05  # Schwellenwert definieren
-
-            if any(deviation[axis] > threshold for axis in deviation):
-                print(f"Fehlstellung bei {joint}: x={position['x']}, y={position['y']}, z={position['z']} "
-                      f"(Abweichung: {deviation})")
-                misalignment_detected = True
-                misaligned_joints.append(joint)
-            else:
-                print(f"Position für {joint} ist korrekt: x={position['x']}, y={position['y']}, z={position['z']}")
-
-        return misalignment_detected, misaligned_joints
-
-    def generate_feedback_message(self, misaligned_joints):
-        """
-        Erzeugt eine Feedback-Nachricht basierend auf den Fehlstellungen.
-        """
-        if misaligned_joints:
-            return f"Fehlstellung erkannt bei: {', '.join(misaligned_joints)}"
-        return "Keine Fehlstellung erkannt"
+        input_array = np.array([input_vector])
+        prediction = self.model.predict(input_array)
+        return "Fehlhaltung erkannt" if prediction[0] == 'fehlerhaft' else "Keine Fehlhaltung"

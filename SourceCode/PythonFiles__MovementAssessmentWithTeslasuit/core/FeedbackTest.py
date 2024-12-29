@@ -8,6 +8,9 @@ import joblib
 script_dir = os.path.dirname(os.path.abspath(__file__))  # Verzeichnis des aktuellen Skripts
 models_folder_path = os.path.join(script_dir, '../../PythonFiles__MovementAssessmentWithTeslasuit/model')  # Pfad für Modelle
 test_data_folder = os.path.join(script_dir, '../../PythonFiles__MovementAssessmentWithTeslasuit/synthetic')  # Pfad für Testdaten
+result_folder = os.path.join(script_dir, "../result")
+
+os.makedirs(result_folder, exist_ok=True)
 
 # Funktion zum Extrahieren der Merkmale aus den Positionen und Rotationen
 def extract_features(data):
@@ -95,7 +98,7 @@ for model_file in model_files:
         raise ValueError("Die Anzahl der Vorhersagen stimmt nicht mit der Anzahl der Testlabels überein.")
 
     # Bewertung
-    report = classification_report(test_labels, y_pred, output_dict=True)
+    report = classification_report(test_labels, y_pred, output_dict=True, zero_division=1)
     results[model_file] = report
 
     # Ergebnisse ausgeben
@@ -113,6 +116,6 @@ results_summary = pd.DataFrame({
 }).T
 
 # Speichern der Ergebnisse in eine CSV-Datei
-results_summary_path = os.path.join(script_dir, "TestFeedback_Results.csv")
+results_summary_path = os.path.join(result_folder, "TestFeedback_Results.csv")
 results_summary.to_csv(results_summary_path, index=True)
 print(f"\nZusammenfassung der Ergebnisse wurde gespeichert: {results_summary_path}")

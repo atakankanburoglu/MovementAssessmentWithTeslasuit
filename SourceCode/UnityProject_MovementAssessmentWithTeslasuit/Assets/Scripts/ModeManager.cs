@@ -17,6 +17,8 @@ public class ModeManager : MonoBehaviour
     [SerializeField]
     private GameObject testingUI;
     [SerializeField]
+    private GameObject feedbackUI;
+    [SerializeField]
     private GameObject cancelButton;
 
     public TestingManager testingManager;
@@ -42,6 +44,7 @@ public class ModeManager : MonoBehaviour
             replayUI.SetActive(false);
             trainingUI.SetActive(false);
             testingUI.SetActive(false);
+            feedbackUI.SetActive(false);
             cancelButton.SetActive(true);
         }
         else if (mode == ApplicationMode.Replay)
@@ -50,6 +53,7 @@ public class ModeManager : MonoBehaviour
             replayUI.SetActive(true);
             trainingUI.SetActive(false);
             testingUI.SetActive(false);
+            feedbackUI.SetActive(false);
             cancelButton.SetActive(true);
         }
         else if (mode == ApplicationMode.Training)
@@ -58,6 +62,7 @@ public class ModeManager : MonoBehaviour
             replayUI.SetActive(false);
             trainingUI.SetActive(true);
             testingUI.SetActive(false);
+            feedbackUI.SetActive(false);
             cancelButton.SetActive(true);
         }
         else if (mode == ApplicationMode.Testing)
@@ -66,6 +71,16 @@ public class ModeManager : MonoBehaviour
             replayUI.SetActive(false);
             trainingUI.SetActive(false);
             testingUI.SetActive(true);
+            feedbackUI.SetActive(false);
+            cancelButton.SetActive(true);
+        }
+        else if (mode == ApplicationMode.Feedback)
+        {
+            recordingUI.SetActive(false);
+            replayUI.SetActive(false);
+            trainingUI.SetActive(false);
+            testingUI.SetActive(false);
+            feedbackUI.SetActive(true);
             cancelButton.SetActive(true);
         }
         else
@@ -80,8 +95,8 @@ public class ModeManager : MonoBehaviour
         replayUI.SetActive(false);
         trainingUI.SetActive(false);
         testingUI.SetActive(false);
+        feedbackUI.SetActive(false);
         cancelButton.SetActive(false);
         FillModeDropDown();
     }
-
 }

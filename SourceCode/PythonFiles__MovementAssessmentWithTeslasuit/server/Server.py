@@ -1,86 +1,62 @@
+import socket
 import threading
+import json
 import time
-import zmq
-
+from core.Feedback import Feedback
 
 class Server:
-    def __init__(self, dataGateway):
+    def __init__(self, dataGateway, host='127.0.0.1', port=6667, model_path='SourceCode\PythonFiles__MovementAssessmentWithTeslasuit\model\GLUTEBRIDGE\SVM_model.pkl'):
         self.dataGateway = dataGateway
-        self.context = zmq.Context()
-        self.receive_socket = self.context.socket(zmq.SUB)
-        self.receive_socket.connect("tcp://localhost:5556")
-        self.receive_socket.setsockopt_string(zmq.SUBSCRIBE, "")
-        self.receive_socket.setsockopt(zmq.CONFLATE, 1)
-        self.send_socket = self.context.socket(zmq.PUB)
-        self.send_socket.bind("tcp://*:6667")
+        self.host = host
+        self.port = port
+        self.model_path = model_path
+        self.feedback = Feedback(self.model_path)
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind((self.host, self.port))
+        self.server_socket.listen(5)
+        print(f"Server gestartet auf {self.host}:{self.port}")
+        self.threadsRunning = True
 
-        self.queue = []
-        self.thread1 = None
-        self.thread2 = None
-        self.threadsRunning = False
+    def handle_client(self, client_socket, addr):
+        print(f"Verbindung hergestellt mit {addr}")
+        buffer = ""
+        last_processed_time = time.time()
+        processing_interval = 0.1  # 10 Hz
 
-    def receive_thread(self):
-        """
-        Empfangsthread: Verarbeitet eingehende Nachrichten.
-        """
-        print("Receive Thread Started")
-        while self.threadsRunning:
-            # Warten auf die nächste Nachricht vom Client
-            try:
-                message = self.receive_socket.recv(copy=True)
-                topic, payload = message.split()
-                string_topic = topic.decode("utf-8")
-                string_payload = payload.decode("utf-8")
+        try:
+            while True:
+                data = client_socket.recv(1024)
+                if not data:
+                    break
+                buffer += data.decode("utf-8")
 
-                print(f"Nachricht empfangen: Topic={string_topic}, Payload={string_payload}")
+                if "\nEND_OF_JSON\n" in buffer:
+                    json_data, buffer = buffer.split("\nEND_OF_JSON\n", 1)
+                    data_list = json.loads(json_data)
 
-                # Aufteilen der Payload und Verarbeiten der Nachricht
-                string_payload_split = string_payload.split(";")
-                send_data = self.dataGateway.process_received_frame(string_topic, string_payload_split[0],
-                                                                    string_payload_split[1:])
+                    for data in data_list:
+                        if time.time() - last_processed_time >= processing_interval:
+                            self.process_data(data, client_socket)
+                            last_processed_time = time.time()
+        except Exception as e:
+            print(f"Fehler: {e}")
+        finally:
+            client_socket.close()
 
-                # Daten in die Warteschlange legen
-                if send_data is not None:
-                    self.queue.append(send_data)
-
-            except Exception as e:
-                print(f"Fehler beim Empfang der Nachricht: {e}")
-
-        print("Receive Thread Stopped")
-
-    def send_thread(self):
-        """
-        Sende-Thread: Senden von Nachrichten an den Client.
-        """
-        print("Send Thread Started")
-        while self.threadsRunning:
-            try:
-                if len(self.queue) > 0:
-                    result = self.queue.pop(0)
-                    self.send_socket.send_string(result)
-                    print(f"Daten gesendet: {result}")
-                time.sleep(0.001)
-            except Exception as e:
-                print(f"Fehler beim Senden der Nachricht: {e}")
-
-        print("Send Thread Stopped")
+    def process_data(self, data, client_socket):
+        feedback = self.feedback.detect_misalignment(data)
+        print(feedback)
+        client_socket.sendall(feedback.encode("utf-8"))
 
     def start(self):
-        """
-        Startet die Threads zum Empfangen und Senden von Nachrichten.
-        """
-        self.threadsRunning = True
-        self.thread1 = threading.Thread(target=self.receive_thread)
-        self.thread1.start()
-        self.thread2 = threading.Thread(target=self.send_thread)
-        self.thread2.start()
+        while self.threadsRunning:
+            try:
+                client_socket, addr = self.server_socket.accept()
+                threading.Thread(target=self.handle_client, args=(client_socket, addr), daemon=True).start()
+            except Exception as e:
+                print(f"Fehler beim Akzeptieren der Verbindung: {e}")
 
     def stop(self):
-        """
-        Beendet die Threads.
-        """
         self.threadsRunning = False
-        if self.thread1:
-            self.thread1.join()
-        if self.thread2:
-            self.thread2.join()
+        self.server_socket.close()
+        print("Server gestoppt.")

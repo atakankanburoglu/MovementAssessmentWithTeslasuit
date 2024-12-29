@@ -5,3 +5,4 @@ class ApplicationMode(Enum):
     TRAINING = 2
     MODELCREATION = 3
     TESTING = 4
+    FEEDBACK = 5
