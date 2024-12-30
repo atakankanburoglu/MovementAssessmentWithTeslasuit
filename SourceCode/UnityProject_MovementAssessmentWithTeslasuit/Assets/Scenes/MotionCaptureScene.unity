@@ -3785,7 +3785,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 275, y: 334}
+  m_AnchoredPosition: {x: 100, y: 334}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &295800943
@@ -6405,7 +6405,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   exerciseDropdown: {fileID: 814596}
   modelDropdown: {fileID: 623718254}
-  startButton: {fileID: 44497662}
+  startButton: {fileID: 1780819818}
   tsHumanAnimator: {fileID: 1324782058}
   serverStatusText: {fileID: 1342801097}
   feedbackPanel: {fileID: 536517480}
@@ -15049,7 +15049,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Serverstatus
+  m_Text: 'Serverstatus:'
 --- !u!222 &1172605851
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -22245,18 +22245,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 530544292}
-        m_TargetAssemblyTypeName: FeedbackManager, Assembly-CSharp
-        m_MethodName: StartFeedback
+      - m_Target: {fileID: 11500000, guid: b5de5e516be02074eb85eca647cbba2e, type: 3}
+        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Test
+          m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
+        m_CallState: 0
 --- !u!114 &1780819819
 MonoBehaviour:
   m_ObjectHideFlags: 0

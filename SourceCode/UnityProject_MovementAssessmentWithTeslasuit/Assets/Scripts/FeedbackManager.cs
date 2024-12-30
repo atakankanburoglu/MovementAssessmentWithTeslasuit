@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq; // Für JObject
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Net.Sockets;
 using System.IO; // Für Path und File
@@ -44,7 +45,6 @@ public class FeedbackManager : MonoBehaviour
     public int bufferSize = 5; // Frames pro Batch
     public float sendInterval = 0.1f; // Sendehäufigkeit (10 Hz)
     private float timeSinceLastSend = 0f;
-
     private Dictionary<string, List<KeyValuePair<string, float>>> exerciseToModels;
     private Dictionary<TsHumanBoneIndex, List<IMapping2dElectricChannel>> hapticChannels = new Dictionary<TsHumanBoneIndex, List<IMapping2dElectricChannel>>();
     private Dictionary<string, TsHumanBoneIndex> jointNameToBoneIndex = new Dictionary<string, TsHumanBoneIndex>
@@ -105,7 +105,7 @@ public class FeedbackManager : MonoBehaviour
     {
         if (exerciseDropdown == null || modelDropdown == null || startButton == null || tsHumanAnimator == null || feedbackPanel == null || feedbackText == null || feedbackUI == null || hapticPlayer == null)
         {
-            Debug.LogError("Nicht alle UI-Elemente oder der HapticPlayer sind zugewiesen!");
+            UnityEngine.Debug.LogError("Nicht alle UI-Elemente oder der HapticPlayer sind zugewiesen!");
             return;
         }
 
@@ -145,12 +145,13 @@ public class FeedbackManager : MonoBehaviour
             client = new TcpClient();
             await client.ConnectAsync("127.0.0.1", 6667);
             stream = client.GetStream();
-            UpdateServerStatus("Verbunden", true);
+            UpdateServerStatus("Connected", true);
             ListenForServerMessages();
         }
         catch (SocketException e)
         {
-            UpdateServerStatus($"Fehler beim Verbinden: {e.Message}", false);
+            UpdateServerStatus("Not Connected", false);
+            UnityEngine.Debug.Log($"Error while Connecting: {e.Message}");
         }
     }
 
@@ -164,11 +165,17 @@ public class FeedbackManager : MonoBehaviour
 
     void SendSuitData()
     {
+        string selectedExercise = exerciseDropdown.options[exerciseDropdown.value].text;
         string selectedModel = modelDropdown.options[modelDropdown.value].text.Split('-')[0].Trim();
+
+        // Modellnamen für den Pfad und die Servernachricht anpassen
+        string modelFileName = selectedModel == "k" ? "k-NN" : selectedModel; // "k" wird zu "k-NN"
+
+        // Originaldaten senden
         var data = new Dictionary<string, object>
         {
-            { "exerciseType", exerciseDropdown.options[exerciseDropdown.value].text },
-            { "model", selectedModel },
+            { "exerciseType", selectedExercise },
+            { "model", modelFileName }, // Angepasster Modellname für den Server
             { "replayPosition", GetReplayPositionData() },
             { "replayRotation", GetReplayRotationData() }
         };
@@ -186,23 +193,23 @@ public class FeedbackManager : MonoBehaviour
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"Fehler beim Senden der Daten: {e.Message}");
+                UnityEngine.Debug.LogError($"Fehler beim Senden der Daten: {e.Message}");
             }
         }
     }
 
     private void InitializeHapticChannels()
     {
-        Debug.Log("Starte die Validierung der Haptic-Kanäle...");
+        UnityEngine.Debug.Log("Starte die Validierung der Haptic-Kanäle...");
         ValidateChannels();
 
         if (hapticChannels.Count == 0)
         {
-            Debug.LogError("Keine Haptic-Kanäle gefunden. Überprüfe die Verbindung zum Teslasuit.");
+            UnityEngine.Debug.LogError("Keine Haptic-Kanäle gefunden. Überprüfe die Verbindung zum Teslasuit.");
         }
         else
         {
-            Debug.Log("Haptic-Kanäle erfolgreich geladen und validiert.");
+            UnityEngine.Debug.Log("Haptic-Kanäle erfolgreich geladen und validiert.");
         }
     }
 
@@ -210,23 +217,23 @@ public class FeedbackManager : MonoBehaviour
     {
         while (hapticPlayer == null)
         {
-            Debug.LogWarning("HapticPlayer ist null. Warte auf Initialisierung...");
+            UnityEngine.Debug.LogWarning("HapticPlayer ist null. Warte auf Initialisierung...");
             yield return null;
         }
 
         while (hapticPlayer.Device == null)
         {
-            Debug.LogWarning("Warte auf Initialisierung des HapticPlayer.Device...");
+            UnityEngine.Debug.LogWarning("Warte auf Initialisierung des HapticPlayer.Device...");
             yield return null;
         }
 
         while (hapticPlayer.Device.Mapping2d == null)
         {
-            Debug.LogWarning("Warte auf Initialisierung des Mapping2d...");
+            UnityEngine.Debug.LogWarning("Warte auf Initialisierung des Mapping2d...");
             yield return null;
         }
 
-        Debug.Log("HapticPlayer ist vollständig initialisiert. Lade Kanäle...");
+        UnityEngine.Debug.Log("HapticPlayer ist vollständig initialisiert. Lade Kanäle...");
         InitializeHapticChannels();
     }
 
@@ -235,19 +242,19 @@ public class FeedbackManager : MonoBehaviour
         // Prüfen, ob der HapticPlayer und das Device initialisiert sind
         if (hapticPlayer == null)
         {
-            Debug.LogError("HapticPlayer ist null. Stelle sicher, dass er korrekt zugewiesen ist.");
+            UnityEngine.Debug.LogError("HapticPlayer ist null. Stelle sicher, dass er korrekt zugewiesen ist.");
             return;
         }
 
         if (hapticPlayer.Device == null)
         {
-            Debug.LogError("HapticPlayer.Device ist null. Teslasuit scheint nicht verbunden zu sein.");
+            UnityEngine.Debug.LogError("HapticPlayer.Device ist null. Teslasuit scheint nicht verbunden zu sein.");
             return;
         }
 
         if (hapticPlayer.Device.Mapping2d == null)
         {
-            Debug.LogError("HapticPlayer.Device.Mapping2d ist null. Mapping-Daten sind nicht verfügbar.");
+            UnityEngine.Debug.LogError("HapticPlayer.Device.Mapping2d ist null. Mapping-Daten sind nicht verfügbar.");
             return;
         }
 
@@ -263,7 +270,7 @@ public class FeedbackManager : MonoBehaviour
             hapticChannels[channel.BoneIndex].Add(channel);
         }
 
-        Debug.Log($"Haptic-Kanäle erfolgreich validiert. {hapticChannels.Count} Körperteile gefunden.");
+        UnityEngine.Debug.Log($"Haptic-Kanäle erfolgreich validiert. {hapticChannels.Count} Körperteile gefunden.");
     }
 
     async void ListenForServerMessages()
@@ -294,7 +301,7 @@ public class FeedbackManager : MonoBehaviour
                             }
                             catch (JsonReaderException ex)
                             {
-                                Debug.LogError($"JSON Parsing Error: {ex.Message}. Raw message: {msg}");
+                                UnityEngine.Debug.LogError($"JSON Parsing Error: {ex.Message}. Raw message: {msg}");
                             }
                         }
 
@@ -305,7 +312,7 @@ public class FeedbackManager : MonoBehaviour
             }
             catch (IOException e)
             {
-                Debug.LogError($"Connection error: {e.Message}");
+                UnityEngine.Debug.LogError($"Connection error: {e.Message}");
                 UpdateServerStatus("Connection lost.", false);
                 break;
             }
@@ -316,7 +323,7 @@ public class FeedbackManager : MonoBehaviour
     {
         try
         {
-            Debug.Log($"Received message: {message}");
+            UnityEngine.Debug.Log($"Received message: {message}");
             var response = JsonConvert.DeserializeObject<Dictionary<string, object>>(message);
 
             // Verarbeite den Status der Fehlstellung
@@ -326,13 +333,17 @@ public class FeedbackManager : MonoBehaviour
                 feedbackText.text = misalignmentStatus;
 
                 // Setze die Farbe basierend auf dem Status
-                if (misalignmentStatus.Contains("Fehlhaltung"))
+                if (misalignmentStatus == "Fehlhaltung erkannt")
                 {
                     feedbackText.color = Color.red; // Rot für Fehlstellung
                 }
-                else
+                else if (misalignmentStatus == "Keine Fehlhaltung")
                 {
                     feedbackText.color = Color.green; // Grün für keine Fehlstellung
+                }
+                else
+                {
+                    feedbackText.color = Color.black; // Standardfarbe für unbekannte Fälle
                 }
             }
 
@@ -341,25 +352,33 @@ public class FeedbackManager : MonoBehaviour
             {
                 var deviations = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(response["deviations"].ToString());
 
-                foreach (var deviation in deviations)
+                // Haptisches Feedback nur bei Fehlstellung
+                if (feedbackText.text == "Fehlhaltung erkannt")
                 {
-                    string joint = deviation["joint"].ToString();
-                    var vector = deviation["deviation"] as JArray;
+                    foreach (var deviation in deviations)
+                    {
+                        string joint = deviation["joint"].ToString();
+                        var vector = deviation["deviation"] as JArray;
 
-                    // Highlight deviation on the body part
-                    HighlightDeviation(joint, new Vector3(
-                        float.Parse(vector[0].ToString()),
-                        float.Parse(vector[1].ToString()),
-                        float.Parse(vector[2].ToString())
-                    ));
+                        // Trigger haptic feedback and highlight deviation
+                        HighlightDeviation(joint, new Vector3(
+                            float.Parse(vector[0].ToString()),
+                            float.Parse(vector[1].ToString()),
+                            float.Parse(vector[2].ToString())
+                        ));
 
-                    TriggerHapticFeedback(joint, 1);
+                        TriggerHapticFeedback(joint, 1); // Feedback nur bei Fehlstellung
+                    }
+                }
+                else
+                {
+                    UnityEngine.Debug.Log("Keine Fehlhaltung erkannt, kein haptisches Feedback ausgelöst.");
                 }
             }
         }
         catch (JsonReaderException ex)
         {
-            Debug.LogError($"JSON Parsing Error: {ex.Message}. Raw message: {message}");
+            UnityEngine.Debug.LogError($"JSON Parsing Error: {ex.Message}. Raw message: {message}");
         }
     }
 
@@ -368,14 +387,14 @@ public class FeedbackManager : MonoBehaviour
         // Map jointName to TsHumanBoneIndex
         if (!jointNameToBoneIndex.TryGetValue(jointName, out TsHumanBoneIndex boneIndex))
         {
-            Debug.LogError($"Ungültiger Gelenkname: {jointName}");
+            UnityEngine.Debug.LogError($"Ungültiger Gelenkname: {jointName}");
             return;
         }
 
         // Ensure the BoneTransform exists for the boneIndex
         if (!tsHumanAnimator.BoneTransforms.TryGetValue(boneIndex, out Transform boneTransform))
         {
-            Debug.LogError($"Kein Transform für {boneIndex} gefunden.");
+            UnityEngine.Debug.LogError($"Kein Transform für {boneIndex} gefunden.");
             return;
         }
 
@@ -383,7 +402,7 @@ public class FeedbackManager : MonoBehaviour
         Renderer renderer = boneTransform.GetComponent<Renderer>();
         if (renderer == null)
         {
-            Debug.LogWarning($"Kein Renderer für {jointName} gefunden, kann nicht farblich markiert werden.");
+            UnityEngine.Debug.LogWarning($"Kein Renderer für {jointName} gefunden, kann nicht farblich markiert werden.");
             return;
         }
 
@@ -406,7 +425,7 @@ public class FeedbackManager : MonoBehaviour
 
         if (!File.Exists(path))
         {
-            Debug.LogError($"Die Datei model_accuracies.json wurde nicht gefunden unter: {path}");
+            UnityEngine.Debug.LogError($"Die Datei model_accuracies.json wurde nicht gefunden unter: {path}");
             return;
         }
 
@@ -451,7 +470,7 @@ public class FeedbackManager : MonoBehaviour
         {
             foreach (var model in exerciseToModels[selectedExercise])
             {
-                modelDropdown.options.Add(new Dropdown.OptionData($"{model.Key} - Genauigkeit: {model.Value:F3}"));
+                modelDropdown.options.Add(new Dropdown.OptionData($"{model.Key} - Precision: {model.Value:F3}"));
             }
         }
 
@@ -460,23 +479,32 @@ public class FeedbackManager : MonoBehaviour
 
     public void TriggerHapticFeedback(string jointName, float intensity)
     {
+        // Map jointName to TsHumanBoneIndex
         if (!jointNameToBoneIndex.TryGetValue(jointName, out TsHumanBoneIndex boneIndex))
         {
-            Debug.LogError($"Ungültiger Gelenkname: {jointName}");
+            UnityEngine.Debug.LogError($"Ungültiger Gelenkname: {jointName}");
             return;
         }
 
+        // Prüfen, ob Haptik-Kanäle für das Gelenk vorhanden sind
         if (!hapticChannels.ContainsKey(boneIndex))
         {
-            Debug.LogError($"Keine Haptik-Kanäle für {boneIndex} gefunden.");
+            UnityEngine.Debug.LogError($"Keine Haptik-Kanäle für {boneIndex} gefunden.");
+            return;
+        }
+
+        // Feedback nur für signifikante Intensität abgeben (Threshold)
+        if (intensity < 0.2f) // Set threshold for minor deviations
+        {
+            UnityEngine.Debug.Log($"Abweichung für {jointName} zu gering ({intensity}), kein Feedback nötig.");
             return;
         }
 
         // Konfiguriere Haptik basierend auf Intensität
-        frequency = Mathf.Clamp((int)(150 * intensity), 1, 150);
-        amplitude = Mathf.Clamp((int)(100 * intensity), 1, 100);
-        pulseWidth = Mathf.Clamp((int)(320 * intensity), 1, 320);
-        durationMs = 500;
+        frequency = Mathf.Clamp((int)(50 * intensity), 1, 100); // Weniger aggressive Frequenz
+        amplitude = Mathf.Clamp((int)(30 * intensity), 1, 50);  // Reduzierte Amplitude
+        pulseWidth = Mathf.Clamp((int)(150 * intensity), 1, 200); // Kürzere Pulse
+        durationMs = Mathf.Clamp((int)(300 * intensity), 100, 500); // Kürzere Dauer
 
         // Feedback erstellen
         var channelGroup = hapticChannels[boneIndex];
@@ -484,17 +512,19 @@ public class FeedbackManager : MonoBehaviour
 
         if (hapticPlayable != null)
         {
-            foreach (var channel in channelGroup)
+            // Limitiere Feedback auf maximal 2 Kanäle
+            int maxChannels = Mathf.Min(channelGroup.Count, 2);
+            for (int i = 0; i < maxChannels; i++)
             {
-                hapticPlayable.AddChannel(channel);
+                hapticPlayable.AddChannel(channelGroup[i]);
             }
 
             hapticPlayable.Play();
-            Debug.Log($"Haptisches Feedback für {jointName} mit Intensität {intensity} ausgelöst.");
+            UnityEngine.Debug.Log($"Haptisches Feedback für {jointName} mit Intensität {intensity} ausgelöst.");
         }
         else
         {
-            Debug.LogError($"Fehler beim Erstellen des Haptik-Feedbacks für {jointName}");
+            UnityEngine.Debug.LogError($"Fehler beim Erstellen des Haptik-Feedbacks für {jointName}");
         }
     }
 
