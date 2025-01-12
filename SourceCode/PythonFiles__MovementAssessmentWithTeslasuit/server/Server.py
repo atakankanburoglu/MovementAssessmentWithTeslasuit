@@ -6,11 +6,12 @@ from core.Feedback import Feedback
 import os
 
 class Server:
-    def __init__(self, dataGateway, host='127.0.0.1', port=6667, model_base_path='SourceCode/PythonFiles__MovementAssessmentWithTeslasuit/model'):
+    def __init__(self, dataGateway, host='127.0.0.1', port=6667, model_base_path='SourceCode/PythonFiles__MovementAssessmentWithTeslasuit/model', data_base_path='SourceCode/UnityProject_MovementAssessmentWithTeslasuit/Assets/JsonAttempts'):
         self.dataGateway = dataGateway
         self.host = host
         self.port = port
         self.model_base_path = model_base_path
+        self.data_base_path = data_base_path
         self.feedback = None  # Feedback wird dynamisch initialisiert
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
@@ -59,7 +60,7 @@ class Server:
                 return
 
             # Feedback-Instanz mit dem richtigen Modell initialisieren
-            self.feedback = Feedback(model_path)
+            self.feedback = Feedback(exercise_type, model_name, self.model_base_path, self.data_base_path)
             misalignment_status = self.feedback.detect_misalignment(data)  # Fehlstellung prüfen
             deviations = self.feedback.detect_deviations(data)  # Liefert detaillierte Abweichungen
 
