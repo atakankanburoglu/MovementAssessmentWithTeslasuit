@@ -20,6 +20,7 @@ public class FeedbackManager : MonoBehaviour
     public TsHumanAnimator tsHumanAnimator;
     public Text serverStatusText;
     public GameObject feedbackPanel;
+    public GameObject jointMarkerPrefab;
     public Text feedbackText;
     public GameObject feedbackUI;
     [SerializeField]
