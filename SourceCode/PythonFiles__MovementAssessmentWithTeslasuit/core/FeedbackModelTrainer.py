@@ -28,7 +28,9 @@ from sklearn.naive_bayes import GaussianNB
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
-warnings.simplefilter("ignore", FutureWarning)
+warnings.simplefilter("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", message="`BaseEstimator._validate_data` is deprecated")
+os.environ["PYTHONWARNINGS"] = "ignore::FutureWarning"
 
 import matplotlib
 matplotlib.use('Agg')  # Kein GUI-Fenster, z.B. auf Servern
@@ -49,7 +51,6 @@ def extract_features_relative(data):
     Beispiel, wie man relative Koordinaten herausholt:
     - Hips als Ursprung (0, 0, 0)
     - Rotationen hier nur exemplarisch unverändert
-    - Du kannst weitere Ansätze integrieren, z. B. Gelenkwinkel
     """
     features = []
     for frame in data:

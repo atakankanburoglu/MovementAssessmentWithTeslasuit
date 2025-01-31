@@ -2,20 +2,12 @@ import os
 import json
 import numpy as np
 import joblib
+from collections import deque
 
 class Feedback:
     def __init__(self, exercise_type, model_name, model_base_dir, data_dir):
         """
-        Parameters:
-        -----------
-        exercise_type: str
-            z.B. "GLUTEBRIDGE", "SQUAT", ...
-        model_name: str
-            Basename des Modells, z. B. "k-NN", "Random Forest" etc. (ohne '_model.pkl')
-        model_base_dir: str
-            Pfad zum Modell-Root (z. B. ../model ).
-        data_dir: str
-            Pfad zum Ordner, in dem deine JSON-Trainingsdaten liegen (z. B. ../Assets/JsonAttempts ).
+        ML-Modell + z-Score-Analyse mit Stabilisierung durch gleitenden Mittelwert.
         """
         self.exercise_type = exercise_type
         self.model_name = model_name
@@ -23,18 +15,14 @@ class Feedback:
         self.data_dir = data_dir
 
         self.model = None
-        self.reference_pose = {}
+        self.stats_distribution = {}
+        self.last_deviation_values = deque(maxlen=5)  # Speichert die letzten 5 Frames zur Mittelung
 
-        # 1) Modell laden
         self.load_model()
-
-        # 2) Referenzpose laden (bzw. on-the-fly erzeugen, falls nicht vorhanden)
-        self.load_reference_pose()
+        self.load_or_compute_stats_distribution()
 
     def load_model(self):
-        """
-        Lädt das Modell: model_base_dir/exercise_type/<model_name>_model.pkl
-        """
+        """Lädt das trainierte ML-Modell."""
         model_file = f"{self.model_name}_model.pkl"
         model_path = os.path.join(self.model_base_dir, self.exercise_type, model_file)
 
@@ -44,185 +32,120 @@ class Feedback:
         with open(model_path, 'rb') as f:
             self.model = joblib.load(f)
 
-    def load_reference_pose(self):
-        """
-        Lädt (oder berechnet bei Bedarf) eine reference_pose.json im Ordner:
-            model_base_dir/exercise_type/reference_pose.json
-        Falls es sie nicht gibt, wird sie aus den Positiv-Dateien (exercise_type + _Positive.json) in data_dir berechnet.
-        """
-        ref_pose_path = os.path.join(self.model_base_dir, self.exercise_type, "reference_pose.json")
+    def load_or_compute_stats_distribution(self):
+        """Lädt oder berechnet die statistische Verteilung für Gelenkpositionen."""
+        stats_file_path = os.path.join(self.model_base_dir, self.exercise_type, "stats_distribution.json")
 
-        if os.path.exists(ref_pose_path):
-            # Vorhanden -> einfach laden
-            with open(ref_pose_path, 'r') as f:
-                self.reference_pose = json.load(f)
+        if os.path.exists(stats_file_path):
+            with open(stats_file_path, 'r') as f:
+                self.stats_distribution = json.load(f)
         else:
-            # Noch nicht vorhanden -> berechnen
-            print(f"[INFO] reference_pose.json für {self.exercise_type} nicht gefunden. Erzeuge sie on-the-fly...")
-            self.reference_pose = self.compute_reference_pose_for_exercise(self.exercise_type)
-            
-            if not self.reference_pose:
-                # Falls auch keine Positivdaten da sind oder etwas schiefging, bleibts leer
-                print(f"[WARN] Keine Referenzpose für {self.exercise_type} erstellt (keine Daten?). Abweichungen = 0.")
+            print(f"[INFO] Keine Statistik gefunden für {self.exercise_type}. Berechne on-the-fly...")
+            self.stats_distribution = self.compute_stats_distribution_for_exercise(self.exercise_type)
+
+            if not self.stats_distribution:
+                print(f"[WARN] Keine Statistik generiert (evtl. keine korrekten Daten?).")
                 return
 
-            # Erstellten Dict speichern
             os.makedirs(os.path.join(self.model_base_dir, self.exercise_type), exist_ok=True)
-            with open(ref_pose_path, 'w') as f:
-                json.dump(self.reference_pose, f, indent=4)
-            print(f"[OK] reference_pose.json unter {ref_pose_path} gespeichert.")
+            with open(stats_file_path, 'w') as f:
+                json.dump(self.stats_distribution, f, indent=4)
+            print(f"[OK] stats_distribution.json gespeichert unter {stats_file_path}")
 
-    def compute_reference_pose_for_exercise(self, exercise_type):
-        """
-        Sucht im data_dir nach *Positiv*-Dateien zu diesem exercise_type (z. B. GLUTEBRIDGE_Positive.json).
-        Berechnet den Mittelwert aller x,y,z Koordinaten (und optional Rotation) und gibt ein Dictionary im
-        Format:
-          {
-            "replayPosition": { "Hips": {"x":..., "y":..., "z":...}, ... },
-            "replayRotation": {...}
-          }
-        zurück. Gibt {} (leer) zurück, wenn keine Daten gefunden werden.
-        """
+    def compute_stats_distribution_for_exercise(self, exercise_type):
+        """Berechnet Mean & Std aus positiven Beispieldaten."""
         json_files = [f for f in os.listdir(self.data_dir) if f.endswith('.json')]
-        positive_files = []
-
-        # 1) Herausfiltern: exercise_type + "_Positive.json"
-        #    z.B. "123_GLUTEBRIDGE_Positive.json"
-        for file_name in json_files:
-            base, _ = os.path.splitext(file_name)
-            parts = base.split('_')
-            if len(parts) < 3:
-                continue
-            # parts[0] = "123", parts[1] = "GLUTEBRIDGE", parts[2] = "Positive"
-            if parts[1].lower() == exercise_type.lower() and parts[2].lower() == "positive":
-                positive_files.append(os.path.join(self.data_dir, file_name))
+        positive_files = [os.path.join(self.data_dir, f) for f in json_files if f"{exercise_type}_Positive" in f]
 
         if not positive_files:
-            print(f"[WARN] Keine Positiv-Dateien gefunden für {exercise_type}.")
+            print(f"[WARN] Keine Positiv-Beispiele für {exercise_type} gefunden.")
             return {}
 
-        print(f"[INFO] Berechne reference_pose aus {len(positive_files)} Positiv-Dateien für {exercise_type}...")
-        
-        # 2) Mittelwertbildung
-        position_sum = {}
-        rotation_sum = {}
-        count_position = {}
-        count_rotation = {}
-
-        total_frames = 0
-
+        all_positions = {}
         for file_path in positive_files:
             with open(file_path, 'r') as f:
-                frames = json.load(f)  # Liste von Frame-Dictionaries
+                frames = json.load(f)
 
             for frame in frames:
-                total_frames += 1
-
-                # Positionen
+                if "replayPosition" not in frame:
+                    continue
                 for joint, coords in frame["replayPosition"].items():
-                    if joint not in position_sum:
-                        position_sum[joint] = np.array([0.0, 0.0, 0.0])
-                        count_position[joint] = 0
-                    position_sum[joint] += np.array([coords["x"], coords["y"], coords["z"]])
-                    count_position[joint] += 1
+                    if joint not in all_positions:
+                        all_positions[joint] = []
+                    all_positions[joint].append([coords["x"], coords["y"], coords["z"]])
 
-                # Rotationen (optional)
-                for joint, coords in frame["replayRotation"].items():
-                    if joint not in rotation_sum:
-                        rotation_sum[joint] = np.array([0.0, 0.0, 0.0])
-                        count_rotation[joint] = 0
-                    rotation_sum[joint] += np.array([coords["x"], coords["y"], coords["z"]])
-                    count_rotation[joint] += 1
+        stats_distribution = {}
+        for joint, vectors in all_positions.items():
+            arr = np.array(vectors)
+            mean_pos = arr.mean(axis=0)
+            std_pos = arr.std(axis=0)
+            std_pos = np.where(std_pos < 0.01, 0.01, std_pos)  # Kleine Std-Werte korrigieren
 
-        if total_frames == 0:
-            print("[WARN] In den Positiv-Dateien waren keine Frames oder sie sind leer.")
-            return {}
-
-        # Referenzpose-Dict anlegen
-        reference_pose = {
-            "replayPosition": {},
-            "replayRotation": {}
-        }
-
-        for joint, sum_vec in position_sum.items():
-            c = count_position[joint]
-            mean_vec = sum_vec / c
-            reference_pose["replayPosition"][joint] = {
-                "x": float(mean_vec[0]),
-                "y": float(mean_vec[1]),
-                "z": float(mean_vec[2])
+            stats_distribution[joint] = {
+                "mean_pos": mean_pos.tolist(),
+                "std_pos": std_pos.tolist()
             }
 
-        for joint, sum_vec in rotation_sum.items():
-            c = count_rotation[joint]
-            mean_vec = sum_vec / c
-            reference_pose["replayRotation"][joint] = {
-                "x": float(mean_vec[0]),
-                "y": float(mean_vec[1]),
-                "z": float(mean_vec[2])
-            }
-
-        print(f"[INFO] -> {len(positive_files)} Dateien, {total_frames} Frames verarbeitet. Fertig.")
-        return reference_pose
+        return stats_distribution
 
     def detect_misalignment(self, data):
-        """
-        Klassifiziert die Pose mit dem gelernten Modell.
-        Gibt einen String zurück: 'Fehlhaltung erkannt' oder 'Keine Fehlhaltung'.
-        """
+        """ML-Klassifikation kombiniert mit z-Score-Analyse und gleitendem Mittelwert."""
         input_vector = []
-
-        # Positionen
         for joint, values in data["replayPosition"].items():
             input_vector.extend([values["x"], values["y"], values["z"]])
-
-        # Rotationen
         for joint, values in data["replayRotation"].items():
             input_vector.extend([values["x"], values["y"], values["z"]])
 
         input_array = np.array([input_vector])
-        prediction = self.model.predict(input_array)
-        result = "Fehlhaltung erkannt" if prediction[0] == 'fehlerhaft' else "Keine Fehlhaltung"
-        return result
+        predicted_label = self.model.predict(input_array)[0]
+
+        # Abweichungen berechnen
+        deviations = self.detect_deviations(data)
+        self.last_deviation_values.append(deviations)
+
+        # Gleitender Mittelwert der letzten Frames
+        avg_deviation = np.mean([sum(d["intensity"] for d in frame.values()) / len(frame) for frame in self.last_deviation_values])
+
+        # Adaptive Schwellenwerte
+        exercise_thresholds = {
+            "WALLSIT": 0.03,
+            "GLUTEBRIDGE": 0.09,
+            "PLANKHOLD": 0.04,
+            "SIDEPLANKRIGHT": 0.06,
+        }
+        threshold = exercise_thresholds.get(self.exercise_type, 0.04)
+
+        # Falls ML-Modell 'fehlerhaft' erkennt, aber z-Score-Analyse stabil ist
+        if predicted_label == 'fehlerhaft' and avg_deviation < threshold:
+            return "Keine Fehlhaltung"
+
+        return "Fehlhaltung erkannt" if predicted_label == 'fehlerhaft' else "Keine Fehlhaltung"
 
     def detect_deviations(self, data):
-        """
-        Berechnet echte Abweichungen (Positionsdifferenzen) zur geladenen Referenzpose.
-        Falls self.reference_pose leer ist, => Abweichungen = 0.
-        """
+        """Berechnet z-Score Abweichungen mit Gelenk-Gewichtung."""
         deviations = {}
 
-        if not self.reference_pose or "replayPosition" not in self.reference_pose:
-            # Keine Referenzpose -> alles 0
-            for joint in data["replayPosition"].keys():
-                deviations[joint] = {
-                    "vector": [0.0, 0.0, 0.0],
-                    "intensity": 0.0
-                }
-            return deviations
+        if not self.stats_distribution:
+            return {joint: {"vector": [0, 0, 0], "intensity": 0} for joint in data["replayPosition"]}
 
-        # Positionsabweichungen
+        # Kritische Gelenke haben höhere Gewichtung
+        critical_joints = {"Spine": 2.0, "Chest": 1.8, "Hips": 1.5, "Knees": 1.3, "Feet": 0.2, "Arms": 0.1, "Hands": 0.1}
+
         for joint, live_coords in data["replayPosition"].items():
-            if joint not in self.reference_pose["replayPosition"]:
-                deviation_vec = np.array([0.0, 0.0, 0.0])
-            else:
-                ref_coords = self.reference_pose["replayPosition"][joint]
-                deviation_vec = np.array([
-                    live_coords["x"] - ref_coords["x"],
-                    live_coords["y"] - ref_coords["y"],
-                    live_coords["z"] - ref_coords["z"]
-                ])
-            intensity = float(np.linalg.norm(deviation_vec))
+            if joint not in self.stats_distribution:
+                deviations[joint] = {"vector": [0, 0, 0], "intensity": 0}
+                continue
+
+            mean_pos = np.array(self.stats_distribution[joint]["mean_pos"])
+            std_pos = np.array(self.stats_distribution[joint]["std_pos"])
+            live_vec = np.array([live_coords["x"], live_coords["y"], live_coords["z"]])
+
+            z_vec = (live_vec - mean_pos) / std_pos
+            intensity = float(np.linalg.norm(z_vec)) * critical_joints.get(joint, 1.0)
+
             deviations[joint] = {
-                "vector": deviation_vec.tolist(),
+                "vector": z_vec.tolist(),
                 "intensity": intensity
             }
 
-        # Optional: Rotationsabweichungen
-        # (Wenn du rotation mit einbeziehen willst)
-        # for joint, live_rot in data["replayRotation"].items():
-        #     if joint in self.reference_pose["replayRotation"]:
-        #         ref_rot = self.reference_pose["replayRotation"][joint]
-        #         # Euler-Diff oder Quaternions etc.
-        #         # store extra info in deviations[joint]["rotation_intensity"] = ...
         return deviations
